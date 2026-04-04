@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Probability — Basics &amp; Conditional Probability</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --prob-blue:#3b82f6;--prob-sky:#0ea5e9;
+  --event-orange:#f97316;--event-amber:#f59e0b;
+  --rule-green:#10b981;--rule-teal:#14b8a6;
+  --cond-purple:#8b5cf6;--cond-pink:#ec4899;
+  --bg:#0f1117;--bg2:#161b27;--text:#e8eaf0;--muted:#8892a4;
+  --card:rgba(255,255,255,0.04);--radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(249,115,22,0.18) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 40% at 80% 90%,rgba(139,92,246,0.12) 0%,transparent 60%),var(--bg);
+  position:relative;overflow:hidden;}
+.hero-badge{font-family:'Fira Code',monospace;font-size:12px;color:var(--event-orange);background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);padding:6px 16px;border-radius:50px;letter-spacing:2px;margin-bottom:24px;display:inline-block;}
+.hero h1{font-family:'Fredoka One',cursive;font-size:clamp(2.4rem,7vw,5rem);line-height:1.05;
+  background:linear-gradient(135deg,#fff 15%,var(--prob-blue) 30%,var(--event-orange) 50%,var(--rule-green) 70%,var(--cond-purple) 85%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+.hero p{font-size:20px;color:var(--muted);max-width:720px;line-height:1.7;margin-bottom:36px;}
+.topic-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:900px;}
+.pill{font-family:'Fira Code',monospace;font-size:13px;padding:8px 18px;border-radius:50px;font-weight:500;border:1px solid;}
+.pill-prob{color:var(--prob-blue);border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.1);}
+.pill-event{color:var(--event-orange);border-color:rgba(249,115,22,0.5);background:rgba(249,115,22,0.1);}
+.pill-rule{color:var(--rule-green);border-color:rgba(16,185,129,0.5);background:rgba(16,185,129,0.1);}
+.pill-cond{color:var(--cond-purple);border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.1);}
+.float-code{position:absolute;font-family:'Fira Code',monospace;font-size:11px;color:rgba(255,255,255,0.05);pointer-events:none;user-select:none;white-space:nowrap;}
+.wrapper{max-width:900px;margin:0 auto;padding:0 20px 100px;}
+
+.section-divider{display:flex;align-items:center;gap:14px;margin:70px 0 28px;}
+.section-divider .label{font-family:'Fredoka One',cursive;font-size:26px;white-space:nowrap;}
+.section-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--accent,rgba(255,255,255,0.1)),transparent);}
+.div-prob .label{color:var(--prob-blue);}.div-prob{--accent:rgba(59,130,246,0.4);}
+.div-event .label{color:var(--event-orange);}.div-event{--accent:rgba(249,115,22,0.4);}
+.div-rule .label{color:var(--rule-green);}.div-rule{--accent:rgba(16,185,129,0.4);}
+.div-cond .label{color:var(--cond-purple);}.div-cond{--accent:rgba(139,92,246,0.4);}
+.div-quiz .label{color:#f472b6;}.div-quiz{--accent:rgba(244,114,182,0.4);}
+
+.card{background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--stripe,rgba(255,255,255,0.15)),transparent);}
+.card-prob::before{--stripe:rgba(59,130,246,0.6);}
+.card-event::before{--stripe:rgba(249,115,22,0.6);}
+.card-rule::before{--stripe:rgba(16,185,129,0.6);}
+.card-cond::before{--stripe:rgba(139,92,246,0.6);}
+.card h3{font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:12px;}
+.card-prob h3{color:var(--prob-blue);}
+.card-event h3{color:var(--event-orange);}
+.card-rule h3{color:var(--rule-green);}
+.card-cond h3{color:var(--cond-purple);}
+.card p,.card li{font-size:17px;line-height:1.75;color:rgba(255,255,255,0.72);}
+.card strong{color:#fff;}
+.tip-box{background:rgba(59,130,246,0.06);border-left:3px solid var(--prob-blue);border-radius:8px;padding:13px 16px;margin-top:16px;font-size:16px;color:rgba(255,255,255,0.65);}
+.tip-box-event{background:rgba(249,115,22,0.06);border-left-color:var(--event-orange);}
+.tip-box-rule{background:rgba(16,185,129,0.06);border-left-color:var(--rule-green);}
+.tip-box-cond{background:rgba(139,92,246,0.06);border-left-color:var(--cond-purple);}
+.code-line{font-family:'Fira Code',monospace;background:#0a0f1a;border:1px solid rgba(255,255,255,0.1);padding:14px 18px;border-radius:10px;font-size:15px;color:#7ee787;margin:12px 0;white-space:pre-wrap;line-height:1.6;}
+.output-console{background:#000;border:2px solid rgba(126,231,135,0.3);border-radius:10px;padding:16px;font-family:'Fira Code',monospace;color:#7ee787;font-size:14px;min-height:60px;margin-top:12px;line-height:1.8;overflow-x:auto;}
+
+.demo-box{background:#0a0f1a;border-radius:12px;padding:24px;margin:20px 0;border:2px solid;}
+.box-prob{border-color:rgba(59,130,246,0.3);}
+.box-event{border-color:rgba(249,115,22,0.3);}
+.box-rule{border-color:rgba(16,185,129,0.3);}
+.box-cond{border-color:rgba(139,92,246,0.3);}
+.box-title{font-family:'Fredoka One',cursive;font-size:18px;text-align:center;margin-bottom:20px;}
+.box-prob .box-title{color:var(--prob-blue);}
+.box-event .box-title{color:var(--event-orange);}
+.box-rule .box-title{color:var(--rule-green);}
+.box-cond .box-title{color:var(--cond-purple);}
+select{width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;margin:8px 0;}
+select:focus{outline:none;border-color:var(--prob-blue);}
+.btn{padding:12px 32px;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s;margin:8px 4px;}
+.btn-prob{background:linear-gradient(135deg,var(--prob-blue),var(--prob-sky));color:white;}
+.btn-event{background:linear-gradient(135deg,var(--event-orange),var(--event-amber));color:#000;}
+.btn-rule{background:linear-gradient(135deg,var(--rule-green),var(--rule-teal));color:#000;}
+.btn-cond{background:linear-gradient(135deg,var(--cond-purple),var(--cond-pink));color:white;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+.result-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:20px;margin-top:16px;}
+
+.formula-box{background:rgba(0,0,0,0.35);border:2px solid;border-radius:14px;padding:24px;text-align:center;margin:20px 0;}
+.formula-box .formula{font-family:'Fira Code',monospace;font-size:clamp(18px,4vw,26px);letter-spacing:1px;margin:12px 0;}
+.formula-box .explain{font-size:14px;color:var(--muted);line-height:2;}
+
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:20px 0;}
+.concept-card{background:rgba(255,255,255,0.03);border:2px solid;border-radius:12px;padding:20px;text-align:center;transition:all 0.3s;}
+.concept-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.3);}
+
+/* ── VISUAL OBJECTS ── */
+.dice-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:16px 0;}
+.dice{width:54px;height:54px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;transition:all 0.3s;cursor:default;}
+.dice.hit{background:rgba(16,185,129,0.2);border-color:var(--rule-green);box-shadow:0 0 12px rgba(16,185,129,0.25);}
+.dice.miss{opacity:0.3;}
+
+.marble-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0;}
+.marble{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid rgba(255,255,255,0.15);transition:all 0.3s;}
+.marble.picked{transform:scale(1.2);box-shadow:0 0 16px rgba(255,255,255,0.2);border-width:3px;}
+.marble.faded{opacity:0.25;transform:scale(0.85);}
+
+.prob-bar{height:40px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.06);margin:16px 0;position:relative;}
+.prob-fill{height:100%;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:14px;color:#000;transition:width 0.6s ease;}
+.prob-label{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);}
+
+/* ── TREE DIAGRAM ── */
+.tree-wrap{text-align:center;margin:20px 0;overflow-x:auto;}
+.tree-wrap svg{max-width:100%;height:auto;}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--card);border:1px solid rgba(244,114,182,0.2);border-radius:20px;padding:36px 32px;margin-top:10px;}
+.quiz-header{text-align:center;margin-bottom:32px;}
+.quiz-header h2{font-family:'Fredoka One',cursive;font-size:2rem;color:#f472b6;margin-bottom:8px;}
+.quiz-header p{font-size:17px;color:var(--muted);}
+.quiz-scorebar{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:28px;flex-wrap:wrap;}
+.score-chip{font-family:'Fira Code',monospace;font-size:13px;padding:8px 20px;border-radius:50px;background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.3);color:#f472b6;letter-spacing:1px;}
+.progress-bar-wrap{flex:1;max-width:260px;height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#f472b6,#c084fc);border-radius:3px;transition:width 0.4s ease;width:0%;}
+.qcard{background:#0a0f1a;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px 26px;margin-bottom:18px;transition:border-color 0.3s;}
+.qcard.ok{border-color:rgba(57,255,20,0.35);}.qcard.bad{border-color:rgba(248,81,73,0.35);}
+.qnum{font-family:'Fira Code',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:9px;}
+.qtext{font-family:'Fredoka One',cursive;font-size:19px;color:#fff;margin-bottom:18px;line-height:1.4;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+@media(max-width:480px){.opts{grid-template-columns:1fr;}}
+.opt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 15px;font-family:'Nunito',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);cursor:pointer;text-align:left;transition:all 0.18s;line-height:1.4;}
+.opt:hover:not(:disabled){background:rgba(244,114,182,0.08);border-color:rgba(244,114,182,0.4);color:#fff;transform:translateX(2px);}
+.opt.correct{background:rgba(57,185,80,0.12);border-color:#3fb950;color:#3fb950;font-weight:700;}
+.opt.wrong{background:rgba(248,81,73,0.1);border-color:#f85149;color:#f85149;opacity:0.75;}
+.opt:disabled{cursor:default;}
+.feedback{margin-top:12px;font-size:15px;min-height:20px;padding:0 2px;font-weight:600;}
+.feedback.ok{color:#3fb950;}.feedback.bad{color:#f85149;}
+.final-box{display:none;text-align:center;padding:40px 20px;}.final-box.show{display:block;}
+.final-score{font-family:'Fredoka One',cursive;font-size:clamp(3rem,10vw,5.5rem);margin-bottom:8px;}
+.final-score.perfect{color:var(--rule-green);filter:drop-shadow(0 0 20px rgba(16,185,129,0.5));}
+.final-score.great{color:var(--cond-purple);filter:drop-shadow(0 0 20px rgba(139,92,246,0.5));}
+.final-score.okish{color:var(--prob-blue);}
+.final-stars{font-size:32px;letter-spacing:8px;margin:12px 0;}
+.final-msg{font-family:'Fira Code',monospace;font-size:13px;color:var(--muted);letter-spacing:1px;line-height:2.2;white-space:pre-line;margin-bottom:24px;}
+@media(max-width:600px){.card{padding:20px 18px;}.quiz-wrap{padding:24px 16px;}.dice{width:44px;height:44px;font-size:22px;}.marble{width:36px;height:36px;font-size:16px;}}
+</style>
+</head>
+<body>
+
+<!-- ╔══════════ HERO ══════════╗ -->
+<div class="hero">
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div class="float-code" style="top:12%;left:4%;">P(event) = favorable<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ total<br>0 ≤ P ≤ 1</div>
+    <div class="float-code" style="top:65%;left:2%;">P(A and B) = P(A) × P(B)<br>P(A or B) = P(A) + P(B)<br>if independent</div>
+    <div class="float-code" style="top:20%;right:3%;">P(A|B) = P(A and B)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ P(B)<br>given B happened</div>
+    <div class="float-code" style="top:70%;right:4%;">🎲 Dice: 1/6<br>🪙 Coin: 1/2<br>🃏 Card: 1/52</div>
+  </div>
+  <div class="hero-badge">// DATA SCIENCE · PROBABILITY //</div>
+  <h1>Probability:<br>The Math of<br>Chance</h1>
+  <p>What are the chances? Probability lets you predict how likely something is to happen — from rolling dice to predicting weather. It's the secret engine behind every AI model!</p>
+  <div class="topic-pills">
+    <div class="pill pill-prob">🎲 Probability Basics</div>
+    <div class="pill pill-event">🎯 Types of Events</div>
+    <div class="pill pill-rule">📐 Probability Rules</div>
+    <div class="pill pill-cond">🔗 Conditional Probability</div>
+  </div>
+</div>
+
+<div class="wrapper">
+
+<!-- ╔══════════ PROBABILITY BASICS ══════════╗ -->
+<div class="section-divider div-prob">
+  <div class="label">🎲 Probability Basics</div>
+</div>
+
+<div class="card card-prob">
+  <h3>What is Probability?</h3>
+  <p><strong>Probability</strong> is a number that tells you <strong>how likely something is to happen</strong>. It's always between <strong>0</strong> (impossible) and <strong>1</strong> (certain).</p>
+  <p style="margin-top:12px;">Think of it like a weather forecast: "There's a 70% chance of rain." That's probability — the chance is 0.70 (or 70 out of 100).</p>
+
+  <div class="formula-box" style="border-color:var(--prob-blue);">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--prob-blue);">The Probability Formula</div>
+    <div class="formula" style="color:var(--prob-blue);">P(event) = Favorable outcomes ÷ Total possible outcomes</div>
+    <div class="explain">How many ways can it happen? ÷ How many total things could happen?</div>
+  </div>
+
+  <div style="display:flex;gap:0;margin:20px 0;border-radius:12px;overflow:hidden;">
+    <div style="flex:1;background:rgba(248,81,73,0.15);padding:16px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:#f85149;">0</div>
+      <div style="font-size:12px;color:var(--muted);">Impossible</div>
+      <div style="font-size:18px;margin-top:4px;">🚫</div>
+    </div>
+    <div style="flex:2;background:rgba(249,115,22,0.12);padding:16px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--event-orange);">0.25</div>
+      <div style="font-size:12px;color:var(--muted);">Unlikely</div>
+      <div style="font-size:18px;margin-top:4px;">🤔</div>
+    </div>
+    <div style="flex:2;background:rgba(234,179,8,0.12);padding:16px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--event-amber);">0.50</div>
+      <div style="font-size:12px;color:var(--muted);">50-50</div>
+      <div style="font-size:18px;margin-top:4px;">🪙</div>
+    </div>
+    <div style="flex:2;background:rgba(16,185,129,0.12);padding:16px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--rule-green);">0.75</div>
+      <div style="font-size:12px;color:var(--muted);">Likely</div>
+      <div style="font-size:18px;margin-top:4px;">👍</div>
+    </div>
+    <div style="flex:1;background:rgba(59,130,246,0.15);padding:16px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--prob-blue);">1</div>
+      <div style="font-size:12px;color:var(--muted);">Certain</div>
+      <div style="font-size:18px;margin-top:4px;">✅</div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-prob">
+  <h3>Classic Examples</h3>
+
+  <div class="concept-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+    <div class="concept-card" style="border-color:var(--prob-blue);">
+      <div style="font-size:40px;margin-bottom:8px;">🪙</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--prob-blue);margin-bottom:6px;">Coin Flip</div>
+      <div style="font-size:14px;color:var(--muted);">P(Heads) = 1/2 = <strong style="color:#fff;">0.5</strong></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">1 favorable out of 2 total</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--event-orange);">
+      <div style="font-size:40px;margin-bottom:8px;">🎲</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--event-orange);margin-bottom:6px;">Rolling a 6</div>
+      <div style="font-size:14px;color:var(--muted);">P(6) = 1/6 = <strong style="color:#fff;">0.167</strong></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">1 favorable out of 6 total</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--rule-green);">
+      <div style="font-size:40px;margin-bottom:8px;">🎲</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--rule-green);margin-bottom:6px;">Rolling Even</div>
+      <div style="font-size:14px;color:var(--muted);">P(even) = 3/6 = <strong style="color:#fff;">0.5</strong></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">3 favorable (2,4,6) out of 6</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--cond-purple);">
+      <div style="font-size:40px;margin-bottom:8px;">🃏</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--cond-purple);margin-bottom:6px;">Drawing a Heart</div>
+      <div style="font-size:14px;color:var(--muted);">P(♥) = 13/52 = <strong style="color:#fff;">0.25</strong></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">13 hearts in a 52-card deck</div>
+    </div>
+  </div>
+
+  <div class="code-line">import random
+
+# Simulate a coin flip
+coin = random.choice(["Heads", "Tails"])
+print("Coin:", coin)
+
+# Simulate a dice roll
+dice = random.randint(1, 6)
+print("Dice:", dice)
+
+# Calculate probability
+favorable = 3    # even numbers: 2, 4, 6
+total = 6        # total faces
+prob = favorable / total
+print(f"P(even) = {favorable}/{total} = {prob}")</div>
+
+  <div class="output-console">Coin: Heads
+Dice: 4
+P(even) = 3/6 = 0.5</div>
+</div>
+
+<div class="card card-prob">
+  <h3>Probability as Fraction, Decimal, and Percentage</h3>
+  <p>Probability can be written three ways — they all mean the same thing!</p>
+
+  <div style="background:rgba(59,130,246,0.08);border:2px solid rgba(59,130,246,0.25);border-radius:12px;padding:20px;margin:16px 0;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;">
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Fraction</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--prob-blue);">1/4</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Decimal</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--event-orange);">0.25</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Percentage</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--rule-green);">25%</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;font-size:14px;color:var(--muted);">
+      Fraction → Decimal: divide top by bottom (1 ÷ 4 = 0.25)<br>
+      Decimal → Percentage: multiply by 100 (0.25 × 100 = 25%)
+    </div>
+  </div>
+</div>
+
+<!-- Interactive: Dice Probability Calculator -->
+<div class="demo-box box-prob">
+  <div class="box-title">🎲 Interactive: Dice Probability</div>
+  <p style="text-align:center;color:var(--muted);margin-bottom:16px;">What's the probability of rolling your target? Pick and see!</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-prob" onclick="diceProb('exact',3)">Exactly 3</button>
+    <button class="btn btn-prob" onclick="diceProb('even',0)">Even Number</button>
+    <button class="btn btn-prob" onclick="diceProb('gt',4)">Greater than 4</button>
+    <button class="btn btn-prob" onclick="diceProb('lte',2)">≤ 2</button>
+    <button class="btn btn-prob" onclick="diceProb('not',6)">Not 6</button>
+  </div>
+  <div id="diceOutput"></div>
+</div>
+
+
+<!-- ╔══════════ TYPES OF EVENTS ══════════╗ -->
+<div class="section-divider div-event">
+  <div class="label">🎯 Types of Events</div>
+</div>
+
+<div class="card card-event">
+  <h3>Sample Space &amp; Events</h3>
+  <p>The <strong>sample space</strong> is the set of ALL possible outcomes. An <strong>event</strong> is the specific outcome(s) you care about.</p>
+
+  <div style="background:rgba(249,115,22,0.08);border:2px solid rgba(249,115,22,0.25);border-radius:12px;padding:20px;margin:16px 0;">
+    <strong style="color:var(--event-orange);font-size:17px;">Example: Rolling a Die</strong>
+    <div style="margin-top:12px;">
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;"><strong style="color:#fff;">Sample Space (S):</strong> All possible results</div>
+      <div class="dice-grid">
+        <div class="dice">⚀</div><div class="dice">⚁</div><div class="dice">⚂</div>
+        <div class="dice">⚃</div><div class="dice">⚄</div><div class="dice">⚅</div>
+      </div>
+      <div style="font-size:14px;color:var(--muted);margin-top:12px;"><strong style="color:#fff;">Event A = "Rolling even":</strong> The outcomes we want</div>
+      <div class="dice-grid">
+        <div class="dice miss">⚀</div><div class="dice hit">⚁</div><div class="dice miss">⚂</div>
+        <div class="dice hit">⚃</div><div class="dice miss">⚄</div><div class="dice hit">⚅</div>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-family:'Fira Code',monospace;font-size:14px;color:var(--rule-green);">P(even) = 3 favorable ÷ 6 total = 0.5</div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-event">
+  <h3>Complement: The Opposite Event</h3>
+  <p>The <strong>complement</strong> of an event is "everything ELSE" — the probability that the event does NOT happen.</p>
+
+  <div class="formula-box" style="border-color:var(--event-orange);">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--event-orange);">Complement Rule</div>
+    <div class="formula" style="color:var(--event-orange);">P(NOT A) = 1 − P(A)</div>
+    <div class="explain">If P(rain) = 0.3, then P(no rain) = 1 − 0.3 = <strong style="color:#fff;">0.7</strong></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+    <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:13px;color:var(--muted);">P(rolling a 6)</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--rule-green);">1/6</div>
+    </div>
+    <div style="background:rgba(248,81,73,0.08);border:2px solid rgba(248,81,73,0.25);border-radius:12px;padding:16px;text-align:center;">
+      <div style="font-size:13px;color:var(--muted);">P(NOT rolling a 6)</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:24px;color:#f85149;">5/6</div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-box-event">🎯 <strong>Quick Trick:</strong> If a problem asks "what's the probability something does NOT happen," just calculate the probability it DOES happen and subtract from 1!</div>
+</div>
+
+<div class="card card-event">
+  <h3>Independent vs Dependent Events</h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;">
+    <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:12px;padding:20px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--rule-green);margin-bottom:8px;">Independent 🎲🎲</div>
+      <div style="font-size:15px;color:var(--muted);line-height:1.8;">One event does <strong style="color:#fff;">NOT affect</strong> the other.</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:10px;line-height:1.8;">
+        Rolling a die twice — the first roll doesn't change the second.<br>
+        Flipping a coin after rolling a die.<br>
+        Two separate coin flips.
+      </div>
+    </div>
+    <div style="background:rgba(139,92,246,0.08);border:2px solid rgba(139,92,246,0.25);border-radius:12px;padding:20px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--cond-purple);margin-bottom:8px;">Dependent 🎒→📘</div>
+      <div style="font-size:15px;color:var(--muted);line-height:1.8;">One event <strong style="color:#fff;">DOES affect</strong> the other.</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:10px;line-height:1.8;">
+        Drawing cards WITHOUT replacing — fewer cards remain!<br>
+        Picking marbles from a bag without putting them back.<br>
+        Eating a candy from a box then picking another.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════ PROBABILITY RULES ══════════╗ -->
+<div class="section-divider div-rule">
+  <div class="label">📐 Probability Rules</div>
+</div>
+
+<div class="card card-rule">
+  <h3>AND Rule (Multiplication) — Both Events Happen</h3>
+  <p>What's the probability of <strong>BOTH</strong> events happening? <strong>Multiply</strong> their probabilities!</p>
+
+  <div class="formula-box" style="border-color:var(--rule-green);">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--rule-green);">AND Rule (Independent Events)</div>
+    <div class="formula" style="color:var(--rule-green);">P(A AND B) = P(A) × P(B)</div>
+  </div>
+
+  <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:12px;padding:20px;margin:16px 0;">
+    <strong style="color:var(--rule-green);font-size:16px;">Example: Coin AND Die</strong>
+    <div style="font-size:15px;color:var(--muted);margin-top:10px;line-height:2;">
+      What's the probability of flipping Heads <strong style="color:#fff;">AND</strong> rolling a 6?<br>
+      P(Heads) = 1/2<br>
+      P(6) = 1/6<br>
+      P(Heads AND 6) = 1/2 × 1/6 = <strong style="color:var(--rule-green);font-size:18px;">1/12 ≈ 0.083 (8.3%)</strong>
+    </div>
+  </div>
+
+  <div class="code-line"># Probability of heads AND rolling 6
+p_heads = 1/2
+p_six = 1/6
+p_both = p_heads * p_six
+print(f"P(Heads AND 6) = {p_heads} × {p_six} = {p_both:.4f}")
+print(f"That's about {p_both*100:.1f}% chance")</div>
+
+  <div class="output-console">P(Heads AND 6) = 0.5 × 0.16667 = 0.0833
+That's about 8.3% chance</div>
+</div>
+
+<div class="card card-rule">
+  <h3>OR Rule (Addition) — Either Event Happens</h3>
+  <p>What's the probability of <strong>AT LEAST ONE</strong> event happening? <strong>Add</strong> their probabilities (but don't double-count!).</p>
+
+  <div class="formula-box" style="border-color:var(--rule-green);">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--rule-green);">OR Rule</div>
+    <div class="formula" style="color:var(--rule-green);">P(A OR B) = P(A) + P(B) − P(A AND B)</div>
+    <div class="explain">Subtract the overlap so you don't count it twice!</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+    <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:12px;padding:20px;">
+      <strong style="color:var(--rule-green);font-size:15px;">Mutually Exclusive (no overlap)</strong>
+      <div style="font-size:14px;color:var(--muted);margin-top:10px;line-height:1.8;">
+        Rolling a 2 OR a 5?<br>
+        Can't be BOTH at once!<br>
+        P(2 or 5) = 1/6 + 1/6 = <strong style="color:#fff;">2/6 = 1/3</strong>
+      </div>
+    </div>
+    <div style="background:rgba(139,92,246,0.08);border:2px solid rgba(139,92,246,0.25);border-radius:12px;padding:20px;">
+      <strong style="color:var(--cond-purple);font-size:15px;">With Overlap</strong>
+      <div style="font-size:14px;color:var(--muted);margin-top:10px;line-height:1.8;">
+        Drawing a King OR a Heart?<br>
+        King of Hearts is BOTH!<br>
+        P = 4/52 + 13/52 − 1/52 = <strong style="color:#fff;">16/52</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive: Marble Bag -->
+<div class="demo-box box-rule">
+  <div class="box-title">🔴🔵🟢 Interactive: Marble Bag Probability</div>
+  <p style="text-align:center;color:var(--muted);margin-bottom:16px;">A bag has 5 red, 3 blue, and 2 green marbles. What's the probability of picking each color?</p>
+  <div class="marble-row" id="marbleBag"></div>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+    <button class="btn btn-event" onclick="marbleCalc('red')">P(Red) 🔴</button>
+    <button class="btn btn-event" onclick="marbleCalc('blue')">P(Blue) 🔵</button>
+    <button class="btn btn-event" onclick="marbleCalc('green')">P(Green) 🟢</button>
+    <button class="btn btn-event" onclick="marbleCalc('notred')">P(NOT Red)</button>
+    <button class="btn btn-event" onclick="marbleCalc('redorblue')">P(Red OR Blue)</button>
+  </div>
+  <div id="marbleOutput"></div>
+</div>
+
+
+<!-- ╔══════════ CONDITIONAL PROBABILITY ══════════╗ -->
+<div class="section-divider div-cond">
+  <div class="label">🔗 Conditional Probability</div>
+</div>
+
+<div class="card card-cond">
+  <h3>What is Conditional Probability?</h3>
+  <p><strong>Conditional probability</strong> is the chance of something happening <strong>GIVEN that something else has already happened</strong>. The key word is <strong>"given"</strong>.</p>
+  <p style="margin-top:12px;">Think of it like this: "What's the probability of getting an A on the test, <em>given that</em> you studied?" That's different from the overall probability of getting an A!</p>
+
+  <div class="formula-box" style="border-color:var(--cond-purple);">
+    <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--cond-purple);">Conditional Probability Formula</div>
+    <div class="formula" style="color:var(--cond-purple);">P(A | B) = P(A and B) ÷ P(B)</div>
+    <div class="explain">
+      Read as: "Probability of A <strong style="color:#fff;">given</strong> B"<br>
+      The | symbol means "given that"
+    </div>
+  </div>
+</div>
+
+<div class="card card-cond">
+  <h3>Simple Example: Colored Marbles</h3>
+  <p>A bag has 10 marbles: <strong style="color:#ef4444;">5 red</strong> (3 big, 2 small) and <strong style="color:#3b82f6;">5 blue</strong> (1 big, 4 small).</p>
+
+  <div style="background:rgba(139,92,246,0.08);border:2px solid rgba(139,92,246,0.25);border-radius:12px;padding:20px;margin:16px 0;">
+    <div style="display:grid;gap:12px;">
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;border-left:3px solid var(--cond-purple);">
+        <strong style="color:var(--cond-purple);">Question:</strong>
+        <span style="color:var(--muted);"> You pick a marble and it's <strong style="color:#fff;">RED</strong>. What's the probability it's also <strong style="color:#fff;">BIG</strong>?</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;border-left:3px solid var(--event-orange);">
+        <strong style="color:var(--event-orange);">In math:</strong>
+        <span style="color:var(--muted);font-family:'Fira Code',monospace;"> P(Big | Red) = ?</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;border-left:3px solid var(--rule-green);">
+        <strong style="color:var(--rule-green);">Step 1:</strong>
+        <span style="color:var(--muted);"> Since we KNOW it's red, we only look at the 5 red marbles.</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;border-left:3px solid var(--rule-green);">
+        <strong style="color:var(--rule-green);">Step 2:</strong>
+        <span style="color:var(--muted);"> Of the 5 red marbles, 3 are big.</span>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;border-left:3px solid var(--prob-blue);">
+        <strong style="color:var(--prob-blue);">Answer:</strong>
+        <span style="font-family:'Fira Code',monospace;color:#fff;"> P(Big | Red) = 3/5 = 0.6 = 60%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-box-cond">🔑 <strong>Key Insight:</strong> The "given" information <strong>shrinks your world</strong>. Instead of looking at ALL 10 marbles, you only look at the 5 red ones. The "given" becomes your new total!</div>
+</div>
+
+<div class="card card-cond">
+  <h3>Real-World Example: Student Grades</h3>
+  <p>A class has 30 students. Here's the data:</p>
+
+  <div style="overflow-x:auto;margin:16px 0;">
+    <table style="width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;font-size:14px;">
+      <thead>
+        <tr>
+          <th style="background:rgba(139,92,246,0.15);color:var(--cond-purple);padding:12px;text-align:left;font-family:'Fira Code',monospace;border-bottom:2px solid rgba(139,92,246,0.3);"></th>
+          <th style="background:rgba(139,92,246,0.15);color:var(--cond-purple);padding:12px;text-align:center;font-family:'Fira Code',monospace;border-bottom:2px solid rgba(139,92,246,0.3);">Studied ✅</th>
+          <th style="background:rgba(139,92,246,0.15);color:var(--cond-purple);padding:12px;text-align:center;font-family:'Fira Code',monospace;border-bottom:2px solid rgba(139,92,246,0.3);">Didn't Study ❌</th>
+          <th style="background:rgba(139,92,246,0.15);color:var(--cond-purple);padding:12px;text-align:center;font-family:'Fira Code',monospace;border-bottom:2px solid rgba(139,92,246,0.3);">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:10px;color:var(--rule-green);font-weight:700;border-bottom:1px solid rgba(255,255,255,0.06);">Passed ✅</td>
+          <td style="padding:10px;text-align:center;color:#fff;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.06);">18</td>
+          <td style="padding:10px;text-align:center;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.06);">2</td>
+          <td style="padding:10px;text-align:center;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.06);">20</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;color:#f85149;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.06);">Failed ❌</td>
+          <td style="padding:10px;text-align:center;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.06);">2</td>
+          <td style="padding:10px;text-align:center;color:#fff;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.06);">8</td>
+          <td style="padding:10px;text-align:center;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.06);">10</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;color:var(--muted);font-weight:700;">Total</td>
+          <td style="padding:10px;text-align:center;color:var(--muted);">20</td>
+          <td style="padding:10px;text-align:center;color:var(--muted);">10</td>
+          <td style="padding:10px;text-align:center;color:var(--prob-blue);font-weight:700;">30</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid;gap:12px;margin:16px 0;">
+    <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:10px;padding:16px;">
+      <strong style="color:var(--rule-green);">P(Passed | Studied)</strong>
+      <div style="font-size:14px;color:var(--muted);margin-top:6px;">Of the 20 who studied, 18 passed → <strong style="color:#fff;font-size:18px;">18/20 = 90%!</strong></div>
+    </div>
+    <div style="background:rgba(248,81,73,0.08);border:2px solid rgba(248,81,73,0.25);border-radius:10px;padding:16px;">
+      <strong style="color:#f85149;">P(Passed | Didn't Study)</strong>
+      <div style="font-size:14px;color:var(--muted);margin-top:6px;">Of the 10 who didn't study, only 2 passed → <strong style="color:#fff;font-size:18px;">2/10 = 20%</strong></div>
+    </div>
+    <div style="background:rgba(59,130,246,0.08);border:2px solid rgba(59,130,246,0.25);border-radius:10px;padding:16px;">
+      <strong style="color:var(--prob-blue);">P(Passed) overall</strong>
+      <div style="font-size:14px;color:var(--muted);margin-top:6px;">Out of all 30 students, 20 passed → <strong style="color:#fff;font-size:18px;">20/30 = 66.7%</strong></div>
+    </div>
+  </div>
+
+  <div class="code-line"># Conditional probability in Python
+studied_and_passed = 18
+total_studied = 20
+
+p_pass_given_study = studied_and_passed / total_studied
+print(f"P(Pass | Studied) = {studied_and_passed}/{total_studied} = {p_pass_given_study:.0%}")
+
+not_studied_and_passed = 2
+total_not_studied = 10
+
+p_pass_given_no_study = not_studied_and_passed / total_not_studied
+print(f"P(Pass | Didn't Study) = {not_studied_and_passed}/{total_not_studied} = {p_pass_given_no_study:.0%}")</div>
+
+  <div class="output-console">P(Pass | Studied) = 18/20 = 90%
+P(Pass | Didn't Study) = 2/10 = 20%</div>
+</div>
+
+<div class="card card-cond">
+  <h3>Dependent Events: Drawing Without Replacement</h3>
+  <p>When you pick items <strong>without putting them back</strong>, the probabilities change each time! This is where conditional probability shines.</p>
+
+  <div style="background:rgba(139,92,246,0.08);border:2px solid rgba(139,92,246,0.25);border-radius:12px;padding:20px;margin:16px 0;">
+    <strong style="color:var(--cond-purple);font-size:17px;">Example: Bag with 3 🔴 and 2 🔵</strong>
+
+    <div style="display:grid;gap:12px;margin-top:16px;">
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+        <div style="font-family:'Fredoka One',cursive;color:var(--event-orange);font-size:14px;">Pick 1: What's P(Red)?</div>
+        <div class="marble-row" style="margin:8px 0;">
+          <div class="marble picked" style="background:rgba(239,68,68,0.3);border-color:#ef4444;">🔴</div>
+          <div class="marble" style="background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);">🔴</div>
+          <div class="marble" style="background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);">🔴</div>
+          <div class="marble" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);">🔵</div>
+          <div class="marble" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);">🔵</div>
+        </div>
+        <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--rule-green);">P(Red₁) = 3/5 = 0.6</div>
+      </div>
+
+      <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+        <div style="font-family:'Fredoka One',cursive;color:var(--cond-purple);font-size:14px;">Pick 2: Given 1st was Red, P(Red again)?</div>
+        <div class="marble-row" style="margin:8px 0;">
+          <div class="marble faded" style="background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);">🔴</div>
+          <div class="marble picked" style="background:rgba(239,68,68,0.3);border-color:#ef4444;">🔴</div>
+          <div class="marble" style="background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);">🔴</div>
+          <div class="marble" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);">🔵</div>
+          <div class="marble" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.4);">🔵</div>
+        </div>
+        <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--cond-purple);">P(Red₂ | Red₁) = 2/4 = 0.5 &nbsp;← only 4 marbles left, 2 red!</div>
+      </div>
+
+      <div style="background:rgba(16,185,129,0.08);border-radius:8px;padding:14px;">
+        <div style="font-family:'Fredoka One',cursive;color:var(--rule-green);font-size:14px;">Both Red?</div>
+        <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--rule-green);margin-top:6px;">P(Red₁ AND Red₂) = 3/5 × 2/4 = 6/20 = 0.3 = 30%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-box-cond">🔗 <strong>Key Difference:</strong> With replacement (put it back): P stays the same each draw. Without replacement: P changes because total items decrease! This is why conditional probability matters.</div>
+</div>
+
+<div class="card card-cond">
+  <h3>Why Conditional Probability Matters for AI</h3>
+  <p>Machine Learning is <strong>built on conditional probability!</strong> Every prediction an AI makes is essentially asking: "Given what I see, what's the probability of each outcome?"</p>
+
+  <div class="concept-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+    <div class="concept-card" style="border-color:var(--cond-purple);">
+      <div style="font-size:28px;margin-bottom:8px;">📧</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--cond-purple);margin-bottom:6px;">Spam Filter</div>
+      <div style="font-size:12px;color:var(--muted);">P(Spam | contains "FREE WIN") = very high!</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--event-orange);">
+      <div style="font-size:28px;margin-bottom:8px;">🏥</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--event-orange);margin-bottom:6px;">Medical AI</div>
+      <div style="font-size:12px;color:var(--muted);">P(Disease | symptoms) — diagnosis from symptoms</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--rule-green);">
+      <div style="font-size:28px;margin-bottom:8px;">🌦️</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--rule-green);margin-bottom:6px;">Weather</div>
+      <div style="font-size:12px;color:var(--muted);">P(Rain tomorrow | cloudy today)</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--prob-blue);">
+      <div style="font-size:28px;margin-bottom:8px;">💬</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--prob-blue);margin-bottom:6px;">ChatGPT/Claude</div>
+      <div style="font-size:12px;color:var(--muted);">P(next word | all previous words)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive: Conditional Probability Explorer -->
+<div class="demo-box box-cond">
+  <div class="box-title">🔗 Interactive: Conditional Probability Explorer</div>
+  <p style="text-align:center;color:var(--muted);margin-bottom:16px;">Pick a scenario and see how "given" changes the probability!</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-cond" onclick="condCalc('study')">Studied → Pass?</button>
+    <button class="btn btn-cond" onclick="condCalc('weather')">Cloudy → Rain?</button>
+    <button class="btn btn-cond" onclick="condCalc('cards')">Card Draw</button>
+    <button class="btn btn-cond" onclick="condCalc('marbles')">Marbles (no replace)</button>
+  </div>
+  <div id="condOutput"></div>
+</div>
+
+
+<!-- ╔══════════ QUIZ ══════════╗ -->
+<div class="section-divider div-quiz">
+  <div class="label">⚡ Final Knowledge Check</div>
+</div>
+
+<div class="quiz-wrap">
+  <div class="quiz-header">
+    <h2>Probability Quiz</h2>
+    <p>15 questions covering Basics, Events, Rules &amp; Conditional Probability</p>
+  </div>
+  <div class="quiz-scorebar">
+    <div class="score-chip" id="scoreChip">0 / 15</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progBar"></div></div>
+  </div>
+  <div id="quizBody"></div>
+  <div class="final-box" id="finalBox">
+    <div class="final-score" id="finalScore"></div>
+    <div class="final-stars" id="finalStars"></div>
+    <div class="final-msg" id="finalMsg"></div>
+  </div>
+</div>
+
+</div><!-- /wrapper -->
+
+<script>
+/* ══════════ DICE PROBABILITY ══════════ */
+function diceProb(type,val){
+  const out=document.getElementById('diceOutput');
+  const faces=[1,2,3,4,5,6];
+  const emojis=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  let hits=[],desc='',question='';
+
+  if(type==='exact'){hits=faces.filter(f=>f===val);question=`P(rolling exactly ${val})`;desc=`Only 1 face shows ${val}`;}
+  else if(type==='even'){hits=faces.filter(f=>f%2===0);question='P(rolling even)';desc='Even faces: 2, 4, 6';}
+  else if(type==='gt'){hits=faces.filter(f=>f>val);question=`P(rolling > ${val})`;desc=`Faces greater than ${val}: ${hits.join(', ')}`;}
+  else if(type==='lte'){hits=faces.filter(f=>f<=val);question=`P(rolling ≤ ${val})`;desc=`Faces ≤ ${val}: ${hits.join(', ')}`;}
+  else{hits=faces.filter(f=>f!==val);question=`P(NOT rolling ${val})`;desc=`All faces except ${val}`;}
+
+  const p=hits.length/6;
+  const diceHtml=faces.map((f,i)=>`<div class="dice ${hits.includes(f)?'hit':'miss'}">${emojis[i]}</div>`).join('');
+
+  out.innerHTML=`
+    <div class="result-box" style="border-color:var(--prob-blue);">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:18px;color:var(--prob-blue);margin-bottom:12px;">${question}</div>
+      <div class="dice-grid">${diceHtml}</div>
+      <div style="font-size:14px;color:var(--muted);text-align:center;margin:8px 0;">${desc}</div>
+      <div class="prob-bar">
+        <div class="prob-fill" style="width:${p*100}%;background:linear-gradient(90deg,var(--prob-blue),var(--prob-sky));">${(p*100).toFixed(1)}%</div>
+        <div class="prob-label">${hits.length}/6</div>
+      </div>
+      <div style="text-align:center;font-family:'Fira Code',monospace;font-size:15px;margin-top:8px;">
+        <span style="color:var(--rule-green);">Favorable: ${hits.length}</span> ÷ <span style="color:var(--event-orange);">Total: 6</span> = <span style="color:#fff;font-size:18px;">${hits.length}/6 = ${p.toFixed(4)}</span>
+      </div>
+    </div>`;
+}
+
+/* ══════════ MARBLE BAG ══════════ */
+(function(){
+  const bag=document.getElementById('marbleBag');
+  const colors=[...Array(5).fill('🔴'),...Array(3).fill('🔵'),...Array(2).fill('🟢')];
+  const bgs=[...Array(5).fill('rgba(239,68,68,0.25)'),...Array(3).fill('rgba(59,130,246,0.25)'),...Array(2).fill('rgba(34,197,94,0.25)')];
+  const borders=[...Array(5).fill('rgba(239,68,68,0.5)'),...Array(3).fill('rgba(59,130,246,0.5)'),...Array(2).fill('rgba(34,197,94,0.5)')];
+  bag.innerHTML=colors.map((c,i)=>`<div class="marble" style="background:${bgs[i]};border-color:${borders[i]};">${c}</div>`).join('');
+})();
+
+function marbleCalc(type){
+  const out=document.getElementById('marbleOutput');
+  let fav,total=10,question,desc,color,pct;
+
+  if(type==='red'){fav=5;question='P(Red)';desc='5 red out of 10 total';color='#ef4444';}
+  else if(type==='blue'){fav=3;question='P(Blue)';desc='3 blue out of 10 total';color='#3b82f6';}
+  else if(type==='green'){fav=2;question='P(Green)';desc='2 green out of 10 total';color='#22c55e';}
+  else if(type==='notred'){fav=5;question='P(NOT Red)';desc='P(NOT Red) = 1 − P(Red) = 1 − 5/10';color='var(--cond-purple)';}
+  else{fav=8;question='P(Red OR Blue)';desc='Red + Blue = 5 + 3 = 8 (no overlap — mutually exclusive!)';color='var(--event-orange)';}
+
+  const p=fav/total;
+  out.innerHTML=`
+    <div class="result-box" style="border-color:${color};">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:20px;color:${color};margin-bottom:8px;">${question} = ${fav}/${total} = ${(p*100).toFixed(0)}%</div>
+      <div style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:10px;">${desc}</div>
+      <div class="prob-bar">
+        <div class="prob-fill" style="width:${p*100}%;background:${color};">${(p*100).toFixed(0)}%</div>
+        <div class="prob-label">${fav}/${total}</div>
+      </div>
+      <div style="text-align:center;font-family:'Fira Code',monospace;font-size:14px;color:var(--muted);margin-top:8px;">
+        Python: ${fav}/${total} = ${p.toFixed(2)}
+      </div>
+    </div>`;
+}
+
+/* ══════════ CONDITIONAL PROBABILITY EXPLORER ══════════ */
+function condCalc(type){
+  const out=document.getElementById('condOutput');
+  let html='';
+
+  if(type==='study'){
+    html=`
+      <div class="result-box" style="border-color:var(--cond-purple);">
+        <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:18px;color:var(--cond-purple);margin-bottom:16px;">📚 Studying & Passing</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.3);border-radius:10px;padding:16px;text-align:center;">
+            <div style="font-size:13px;color:var(--muted);">P(Pass | Studied)</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:36px;color:var(--rule-green);">90%</div>
+            <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);">18 of 20 who studied passed</div>
+            <div class="prob-bar" style="margin:8px 0;"><div class="prob-fill" style="width:90%;background:var(--rule-green);">90%</div></div>
+          </div>
+          <div style="background:rgba(248,81,73,0.1);border:2px solid rgba(248,81,73,0.3);border-radius:10px;padding:16px;text-align:center;">
+            <div style="font-size:13px;color:var(--muted);">P(Pass | Didn't Study)</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:36px;color:#f85149;">20%</div>
+            <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);">2 of 10 who didn't study passed</div>
+            <div class="prob-bar" style="margin:8px 0;"><div class="prob-fill" style="width:20%;background:#f85149;">20%</div></div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:14px;padding:10px;background:rgba(16,185,129,0.08);border-radius:8px;font-size:14px;color:var(--muted);">
+          Studying makes passing <strong style="color:var(--rule-green);">4.5× more likely!</strong> The "given" completely changes the picture.
+        </div>
+      </div>`;
+  }else if(type==='weather'){
+    html=`
+      <div class="result-box" style="border-color:var(--cond-purple);">
+        <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:18px;color:var(--cond-purple);margin-bottom:16px;">🌦️ Clouds & Rain</div>
+        <div style="display:grid;gap:12px;">
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;display:grid;grid-template-columns:1fr auto;align-items:center;">
+            <div><strong style="color:var(--prob-blue);">P(Rain)</strong> overall<br><span style="font-size:13px;color:var(--muted);">30 rainy days out of 365</span></div>
+            <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--prob-blue);">8.2%</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;display:grid;grid-template-columns:1fr auto;align-items:center;">
+            <div><strong style="color:var(--cond-purple);">P(Rain | Cloudy morning)</strong><br><span style="font-size:13px;color:var(--muted);">Of 80 cloudy mornings, 25 had rain</span></div>
+            <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--cond-purple);">31.3%</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;display:grid;grid-template-columns:1fr auto;align-items:center;">
+            <div><strong style="color:#f85149;">P(Rain | Clear morning)</strong><br><span style="font-size:13px;color:var(--muted);">Of 285 clear mornings, only 5 had rain</span></div>
+            <div style="font-family:'Fredoka One',cursive;font-size:24px;color:#f85149;">1.8%</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:14px;color:var(--muted);">Knowing the morning conditions <strong style="color:#fff;">drastically</strong> changes rain probability!</div>
+      </div>`;
+  }else if(type==='cards'){
+    html=`
+      <div class="result-box" style="border-color:var(--cond-purple);">
+        <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:18px;color:var(--cond-purple);margin-bottom:16px;">🃏 Card Draw (52-card deck)</div>
+        <div style="display:grid;gap:12px;">
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+            <strong style="color:var(--prob-blue);">P(Ace)</strong> = 4/52 = <strong style="color:#fff;">7.7%</strong>
+            <div style="font-size:13px;color:var(--muted);">4 aces in a full deck</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+            <strong style="color:var(--cond-purple);">P(Ace | card is a Spade)</strong> = 1/13 = <strong style="color:#fff;">7.7%</strong>
+            <div style="font-size:13px;color:var(--muted);">1 ace among 13 spades — same probability! (independent)</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+            <strong style="color:var(--event-orange);">P(Ace₂ | first was Ace, no replace)</strong> = 3/51 = <strong style="color:#fff;">5.9%</strong>
+            <div style="font-size:13px;color:var(--muted);">Only 3 aces left in 51 remaining cards! (dependent)</div>
+          </div>
+        </div>
+      </div>`;
+  }else{
+    html=`
+      <div class="result-box" style="border-color:var(--cond-purple);">
+        <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:18px;color:var(--cond-purple);margin-bottom:16px;">🔴🔵 Marbles Without Replacement</div>
+        <div style="font-size:15px;color:var(--muted);text-align:center;margin-bottom:12px;">Bag: 4 🔴, 3 🔵 = 7 total</div>
+        <div style="display:grid;gap:12px;">
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+            <strong style="color:var(--prob-blue);">Draw 1 — P(Red₁)</strong>
+            <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--rule-green);margin-top:4px;">= 4/7 = 57.1%</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+            <strong style="color:var(--cond-purple);">Draw 2 — P(Red₂ | Red₁)</strong>
+            <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--cond-purple);margin-top:4px;">= 3/6 = 50.0% &nbsp;← now only 6 marbles, 3 red!</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:14px;">
+            <strong style="color:var(--event-orange);">Draw 2 — P(Blue₂ | Red₁)</strong>
+            <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--event-orange);margin-top:4px;">= 3/6 = 50.0% &nbsp;← still 3 blue but only 6 total!</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);border-radius:8px;padding:14px;">
+            <strong style="color:var(--rule-green);">P(Both Red) = P(Red₁) × P(Red₂|Red₁)</strong>
+            <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--rule-green);margin-top:4px;">= 4/7 × 3/6 = 12/42 = 2/7 ≈ 28.6%</div>
+          </div>
+        </div>
+      </div>`;
+  }
+  out.innerHTML=html;
+}
+
+
+/* ══════════ QUIZ ══════════ */
+const QS=[
+  {q:'Probability is always between:',opts:['0 and 10','−1 and 1','0 and 1','0 and 100'],ans:2,explain:'Probability ranges from 0 (impossible) to 1 (certain). Always!'},
+  {q:'P(event) = 0 means the event is:',opts:['Certain','Impossible','50-50','Unlikely'],ans:1,explain:'P = 0 means it can NEVER happen — impossible!'},
+  {q:'What is P(Heads) on a fair coin?',opts:['1/4','1/2','1/6','1/3'],ans:1,explain:'A fair coin has 2 sides. P(Heads) = 1 favorable / 2 total = 1/2!'},
+  {q:'A die has 6 faces. What is P(rolling a 3)?',opts:['1/3','3/6','1/6','1/2'],ans:2,explain:'Only 1 face shows 3 out of 6 total faces. P(3) = 1/6!'},
+  {q:'What does "sample space" mean?',opts:['The biggest event','All possible outcomes','The most likely outcome','The winning outcome'],ans:1,explain:'The sample space is the set of ALL possible outcomes of an experiment!'},
+  {q:'P(NOT A) equals:',opts:['P(A)','1 + P(A)','1 − P(A)','P(A) × 2'],ans:2,explain:'The complement rule: P(NOT A) = 1 − P(A). They must add up to 1!'},
+  {q:'If P(rain) = 0.3, what is P(no rain)?',opts:['0.3','0.7','0.03','1.3'],ans:1,explain:'P(no rain) = 1 − P(rain) = 1 − 0.3 = 0.7!'},
+  {q:'Two coins are flipped. P(both Heads) = ?',opts:['1/2','1/4','1/3','1/6'],ans:1,explain:'P(H) × P(H) = 1/2 × 1/2 = 1/4. Multiply for independent AND events!'},
+  {q:'P(A AND B) for independent events is:',opts:['P(A) + P(B)','P(A) × P(B)','P(A) − P(B)','P(A) ÷ P(B)'],ans:1,explain:'For independent events, multiply: P(A AND B) = P(A) × P(B)!'},
+  {q:'Rolling a 2 OR a 5 on one die. These events are:',opts:['Independent','Dependent','Mutually exclusive','Conditional'],ans:2,explain:'You can\'t roll a 2 AND a 5 at the same time — they are mutually exclusive!'},
+  {q:'What does P(A | B) mean?',opts:['A times B','A or B','A given B happened','A minus B'],ans:2,explain:'P(A | B) reads as "probability of A GIVEN that B has occurred"!'},
+  {q:'The "|" symbol in P(A|B) means:',opts:['And','Or','Divide','Given that'],ans:3,explain:'The vertical bar | means "given that" — B has already happened!'},
+  {q:'Bag: 6 red, 4 blue. P(Red) = ?',opts:['6/4','4/10','6/10','6/6'],ans:2,explain:'6 red out of 10 total marbles. P(Red) = 6/10 = 0.6!'},
+  {q:'Picking cards WITHOUT replacement makes events:',opts:['Independent','Dependent','Impossible','Certain'],ans:1,explain:'Without replacement, the first pick changes what\'s available — events are dependent!'},
+  {q:'5 red & 3 blue marbles. Draw a red, don\'t replace. P(2nd is red)?',opts:['5/8','4/8','4/7','5/7'],ans:2,explain:'After removing 1 red: 4 red left, 7 total left. P(Red₂|Red₁) = 4/7!'}
+];
+
+let correct=0,answered=0;
+function buildQuiz(){
+  correct=0;answered=0;
+  document.getElementById('scoreChip').textContent='0 / 15';
+  document.getElementById('progBar').style.width='0%';
+  document.getElementById('finalBox').classList.remove('show');
+  const body=document.getElementById('quizBody');body.innerHTML='';
+  QS.forEach((q,qi)=>{
+    const card=document.createElement('div');card.className='qcard';card.id='qcard'+qi;
+    card.innerHTML=`
+      <div class="qnum">QUESTION ${qi+1} OF ${QS.length}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="opts" id="opts${qi}">
+        ${q.opts.map((o,oi)=>`<button class="opt" onclick="answer(${qi},${oi})">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb${qi}"></div>`;
+    body.appendChild(card);
+  });
+}
+function answer(qi,chosen){
+  const q=QS[qi];const card=document.getElementById('qcard'+qi);
+  const btns=document.querySelectorAll(`#opts${qi} .opt`);
+  btns.forEach(b=>b.disabled=true);
+  const ok=chosen===q.ans;
+  btns[chosen].classList.add(ok?'correct':'wrong');
+  if(!ok)btns[q.ans].classList.add('correct');
+  document.getElementById('fb'+qi).textContent=(ok?'✅ Correct! ':'❌ Not quite! ')+q.explain;
+  document.getElementById('fb'+qi).className='feedback '+(ok?'ok':'bad');
+  card.classList.add(ok?'ok':'bad');
+  if(ok)correct++;answered++;
+  document.getElementById('scoreChip').textContent=`${correct} / ${answered}`;
+  document.getElementById('progBar').style.width=`${(answered/QS.length)*100}%`;
+  if(answered===QS.length)showFinal();
+}
+function showFinal(){
+  const fb=document.getElementById('finalBox'),fs=document.getElementById('finalScore'),fst=document.getElementById('finalStars'),fm=document.getElementById('finalMsg');
+  fs.textContent=`${correct} / ${QS.length}`;
+  if(correct===QS.length){fs.className='final-score perfect';fst.textContent='⭐⭐⭐';fm.textContent='PERFECT SCORE!\nProbability Pro!\nYou mastered the math of chance! 🎲';}
+  else if(correct>=12){fs.className='final-score great';fst.textContent='⭐⭐';fm.textContent='EXCELLENT WORK!\nYou understand probability well!\nReady for ML predictions!';}
+  else{fs.className='final-score okish';fst.textContent='⭐';fm.textContent='GOOD START!\nReview the concepts and\ntry the interactives again!';}
+  fb.classList.add('show');
+}
+buildQuiz();
+</script>
+</body>
+</html>
