@@ -1,1 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayes' Theorem — Flipping the Question</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rev-blue:#3b82f6;--rev-sky:#0ea5e9;
+  --flip-orange:#f97316;--flip-amber:#f59e0b;
+  --bayes-green:#10b981;--bayes-teal:#14b8a6;
+  --app-purple:#8b5cf6;--app-pink:#ec4899;
+  --bg:#0f1117;--bg2:#161b27;--text:#e8eaf0;--muted:#8892a4;
+  --card:rgba(255,255,255,0.04);--radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
 
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(16,185,129,0.18) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 40% at 80% 90%,rgba(249,115,22,0.12) 0%,transparent 60%),var(--bg);
+  position:relative;overflow:hidden;}
+.hero-badge{font-family:'Fira Code',monospace;font-size:12px;color:var(--bayes-green);background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);padding:6px 16px;border-radius:50px;letter-spacing:2px;margin-bottom:24px;display:inline-block;}
+.hero h1{font-family:'Fredoka One',cursive;font-size:clamp(2.4rem,7vw,5rem);line-height:1.05;
+  background:linear-gradient(135deg,#fff 15%,var(--bayes-green) 35%,var(--flip-orange) 55%,var(--app-purple) 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+.hero p{font-size:20px;color:var(--muted);max-width:720px;line-height:1.7;margin-bottom:36px;}
+.topic-pills{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:900px;}
+.pill{font-family:'Fira Code',monospace;font-size:13px;padding:8px 18px;border-radius:50px;font-weight:500;border:1px solid;}
+.pill-rev{color:var(--rev-blue);border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.1);}
+.pill-flip{color:var(--flip-orange);border-color:rgba(249,115,22,0.5);background:rgba(249,115,22,0.1);}
+.pill-bayes{color:var(--bayes-green);border-color:rgba(16,185,129,0.5);background:rgba(16,185,129,0.1);}
+.pill-app{color:var(--app-purple);border-color:rgba(139,92,246,0.5);background:rgba(139,92,246,0.1);}
+.float-code{position:absolute;font-family:'Fira Code',monospace;font-size:11px;color:rgba(255,255,255,0.05);pointer-events:none;user-select:none;white-space:nowrap;}
+.wrapper{max-width:900px;margin:0 auto;padding:0 20px 100px;}
+
+.section-divider{display:flex;align-items:center;gap:14px;margin:70px 0 28px;}
+.section-divider .label{font-family:'Fredoka One',cursive;font-size:26px;white-space:nowrap;}
+.section-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--accent,rgba(255,255,255,0.1)),transparent);}
+.div-rev .label{color:var(--rev-blue);}.div-rev{--accent:rgba(59,130,246,0.4);}
+.div-flip .label{color:var(--flip-orange);}.div-flip{--accent:rgba(249,115,22,0.4);}
+.div-bayes .label{color:var(--bayes-green);}.div-bayes{--accent:rgba(16,185,129,0.4);}
+.div-app .label{color:var(--app-purple);}.div-app{--accent:rgba(139,92,246,0.4);}
+.div-quiz .label{color:#f472b6;}.div-quiz{--accent:rgba(244,114,182,0.4);}
+
+.card{background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--stripe,rgba(255,255,255,0.15)),transparent);}
+.card-rev::before{--stripe:rgba(59,130,246,0.6);}
+.card-flip::before{--stripe:rgba(249,115,22,0.6);}
+.card-bayes::before{--stripe:rgba(16,185,129,0.6);}
+.card-app::before{--stripe:rgba(139,92,246,0.6);}
+.card h3{font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:12px;}
+.card-rev h3{color:var(--rev-blue);}
+.card-flip h3{color:var(--flip-orange);}
+.card-bayes h3{color:var(--bayes-green);}
+.card-app h3{color:var(--app-purple);}
+.card p,.card li{font-size:17px;line-height:1.75;color:rgba(255,255,255,0.72);}
+.card strong{color:#fff;}
+.tip-box{background:rgba(59,130,246,0.06);border-left:3px solid var(--rev-blue);border-radius:8px;padding:13px 16px;margin-top:16px;font-size:16px;color:rgba(255,255,255,0.65);}
+.tip-box-flip{background:rgba(249,115,22,0.06);border-left-color:var(--flip-orange);}
+.tip-box-bayes{background:rgba(16,185,129,0.06);border-left-color:var(--bayes-green);}
+.tip-box-app{background:rgba(139,92,246,0.06);border-left-color:var(--app-purple);}
+.code-line{font-family:'Fira Code',monospace;background:#0a0f1a;border:1px solid rgba(255,255,255,0.1);padding:14px 18px;border-radius:10px;font-size:15px;color:#7ee787;margin:12px 0;white-space:pre-wrap;line-height:1.6;}
+.output-console{background:#000;border:2px solid rgba(126,231,135,0.3);border-radius:10px;padding:16px;font-family:'Fira Code',monospace;color:#7ee787;font-size:14px;min-height:60px;margin-top:12px;line-height:1.8;overflow-x:auto;}
+
+.demo-box{background:#0a0f1a;border-radius:12px;padding:24px;margin:20px 0;border:2px solid;}
+.box-rev{border-color:rgba(59,130,246,0.3);}
+.box-flip{border-color:rgba(249,115,22,0.3);}
+.box-bayes{border-color:rgba(16,185,129,0.3);}
+.box-app{border-color:rgba(139,92,246,0.3);}
+.box-title{font-family:'Fredoka One',cursive;font-size:18px;text-align:center;margin-bottom:20px;}
+.box-rev .box-title{color:var(--rev-blue);}
+.box-flip .box-title{color:var(--flip-orange);}
+.box-bayes .box-title{color:var(--bayes-green);}
+.box-app .box-title{color:var(--app-purple);}
+.btn{padding:12px 32px;border:none;border-radius:50px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s;margin:8px 4px;}
+.btn-rev{background:linear-gradient(135deg,var(--rev-blue),var(--rev-sky));color:white;}
+.btn-flip{background:linear-gradient(135deg,var(--flip-orange),var(--flip-amber));color:#000;}
+.btn-bayes{background:linear-gradient(135deg,var(--bayes-green),var(--bayes-teal));color:#000;}
+.btn-app{background:linear-gradient(135deg,var(--app-purple),var(--app-pink));color:white;}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+.result-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:20px;margin-top:16px;}
+
+.formula-box{background:rgba(0,0,0,0.35);border:2px solid;border-radius:14px;padding:24px;text-align:center;margin:20px 0;}
+.formula-box .formula{font-family:'Fira Code',monospace;font-size:clamp(16px,3.5vw,24px);letter-spacing:1px;margin:12px 0;}
+.formula-box .explain{font-size:14px;color:var(--muted);line-height:2;}
+
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:20px 0;}
+.concept-card{background:rgba(255,255,255,0.03);border:2px solid;border-radius:12px;padding:20px;text-align:center;transition:all 0.3s;}
+.concept-card:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.3);}
+
+.prob-bar{height:40px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.06);margin:12px 0;position:relative;}
+.prob-fill{height:100%;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:14px;color:#000;transition:width 0.6s ease;}
+.prob-label{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);}
+
+/* ── PEOPLE GRID ── */
+.people-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:16px 0;}
+.person{width:100%;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:clamp(14px,2.5vw,22px);transition:all 0.3s;border:2px solid transparent;}
+.person.sick{background:rgba(248,81,73,0.2);border-color:rgba(248,81,73,0.4);}
+.person.healthy{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06);}
+.person.tp{background:rgba(248,81,73,0.35);border-color:#f85149;box-shadow:0 0 8px rgba(248,81,73,0.3);}
+.person.fp{background:rgba(249,115,22,0.25);border-color:var(--flip-orange);box-shadow:0 0 8px rgba(249,115,22,0.2);}
+.person.tn{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);}
+.person.fn{background:rgba(139,92,246,0.2);border-color:var(--app-purple);}
+.person.highlight{transform:scale(1.15);z-index:2;}
+
+/* ── STEP BOX ── */
+.step-box{background:rgba(0,0,0,0.3);border-radius:10px;padding:16px 20px;margin:8px 0;border-left:4px solid rgba(255,255,255,0.1);}
+.step-box.active{border-left-color:var(--bayes-green);background:rgba(16,185,129,0.06);}
+.step-num{font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:4px;}
+
+/* ── FLIP ARROW ── */
+.flip-container{display:flex;align-items:center;justify-content:center;gap:20px;margin:24px 0;flex-wrap:wrap;}
+.flip-card{background:rgba(0,0,0,0.3);border:2px solid;border-radius:14px;padding:20px 24px;text-align:center;min-width:200px;flex:1;max-width:300px;}
+.flip-arrow{font-size:36px;color:var(--bayes-green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:0.7;}50%{transform:scale(1.15);opacity:1;}}
+
+/* slider */
+input[type="range"]{width:100%;margin:12px 0;accent-color:var(--bayes-green);}
+.slider-labels{display:flex;justify-content:space-between;font-family:'Fira Code',monospace;font-size:11px;color:var(--muted);}
+
+/* ── QUIZ ── */
+.quiz-wrap{background:var(--card);border:1px solid rgba(244,114,182,0.2);border-radius:20px;padding:36px 32px;margin-top:10px;}
+.quiz-header{text-align:center;margin-bottom:32px;}
+.quiz-header h2{font-family:'Fredoka One',cursive;font-size:2rem;color:#f472b6;margin-bottom:8px;}
+.quiz-header p{font-size:17px;color:var(--muted);}
+.quiz-scorebar{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:28px;flex-wrap:wrap;}
+.score-chip{font-family:'Fira Code',monospace;font-size:13px;padding:8px 20px;border-radius:50px;background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.3);color:#f472b6;letter-spacing:1px;}
+.progress-bar-wrap{flex:1;max-width:260px;height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#f472b6,#c084fc);border-radius:3px;transition:width 0.4s ease;width:0%;}
+.qcard{background:#0a0f1a;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px 26px;margin-bottom:18px;transition:border-color 0.3s;}
+.qcard.ok{border-color:rgba(57,255,20,0.35);}.qcard.bad{border-color:rgba(248,81,73,0.35);}
+.qnum{font-family:'Fira Code',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:9px;}
+.qtext{font-family:'Fredoka One',cursive;font-size:19px;color:#fff;margin-bottom:18px;line-height:1.4;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+@media(max-width:480px){.opts{grid-template-columns:1fr;}}
+.opt{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 15px;font-family:'Nunito',sans-serif;font-size:15px;color:rgba(255,255,255,0.65);cursor:pointer;text-align:left;transition:all 0.18s;line-height:1.4;}
+.opt:hover:not(:disabled){background:rgba(244,114,182,0.08);border-color:rgba(244,114,182,0.4);color:#fff;transform:translateX(2px);}
+.opt.correct{background:rgba(57,185,80,0.12);border-color:#3fb950;color:#3fb950;font-weight:700;}
+.opt.wrong{background:rgba(248,81,73,0.1);border-color:#f85149;color:#f85149;opacity:0.75;}
+.opt:disabled{cursor:default;}
+.feedback{margin-top:12px;font-size:15px;min-height:20px;padding:0 2px;font-weight:600;}
+.feedback.ok{color:#3fb950;}.feedback.bad{color:#f85149;}
+.final-box{display:none;text-align:center;padding:40px 20px;}.final-box.show{display:block;}
+.final-score{font-family:'Fredoka One',cursive;font-size:clamp(3rem,10vw,5.5rem);margin-bottom:8px;}
+.final-score.perfect{color:var(--bayes-green);filter:drop-shadow(0 0 20px rgba(16,185,129,0.5));}
+.final-score.great{color:var(--app-purple);filter:drop-shadow(0 0 20px rgba(139,92,246,0.5));}
+.final-score.okish{color:var(--rev-blue);}
+.final-stars{font-size:32px;letter-spacing:8px;margin:12px 0;}
+.final-msg{font-family:'Fira Code',monospace;font-size:13px;color:var(--muted);letter-spacing:1px;line-height:2.2;white-space:pre-line;margin-bottom:24px;}
+@media(max-width:600px){.card{padding:20px 18px;}.quiz-wrap{padding:24px 16px;}.people-grid{grid-template-columns:repeat(5,1fr);}.flip-container{flex-direction:column;}.flip-arrow{transform:rotate(90deg);}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;">
+    <div class="float-code" style="top:12%;left:4%;">P(A|B) ≠ P(B|A)<br>Bayes flips it!<br>Update your belief</div>
+    <div class="float-code" style="top:65%;left:2%;">P(sick|+test)<br>≠ P(+test|sick)<br>Base rate matters!</div>
+    <div class="float-code" style="top:20%;right:3%;">prior × likelihood<br>÷ evidence<br>= posterior</div>
+    <div class="float-code" style="top:70%;right:4%;">P(A|B) = P(B|A)×P(A)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ P(B)<br>Rev. Thomas Bayes</div>
+  </div>
+  <div class="hero-badge">// PROBABILITY · BAYES' THEOREM //</div>
+  <h1>Bayes' Theorem:<br>Flipping the<br>Question</h1>
+  <p>You know P(test positive | sick). But what you REALLY want to know is P(sick | test positive). Bayes' Theorem flips the question — and the answer will surprise you!</p>
+  <div class="topic-pills">
+    <div class="pill pill-rev">🔄 Quick Refresher</div>
+    <div class="pill pill-flip">🔀 The Flip Problem</div>
+    <div class="pill pill-bayes">🧮 Bayes' Formula</div>
+    <div class="pill pill-app">🌍 Real-World Uses</div>
+  </div>
+</div>
+
+<div class="wrapper">
+
+<!-- ╔══════════ REFRESHER ══════════╗ -->
+<div class="section-divider div-rev">
+  <div class="label">🔄 Quick Refresher</div>
+</div>
+
+<div class="card card-rev">
+  <h3>Conditional Probability Recap</h3>
+  <p>Remember, <strong>conditional probability</strong> means the chance of something happening <strong>given that something else already happened</strong>. The word <strong>"given"</strong> (the | symbol) shrinks your world.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;">
+    <div style="background:rgba(59,130,246,0.08);border:2px solid rgba(59,130,246,0.25);border-radius:12px;padding:20px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;color:var(--rev-blue);font-size:16px;margin-bottom:8px;">P(Pass)</div>
+      <div style="font-size:14px;color:var(--muted);">Out of ALL 30 students, how many passed?</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--rev-blue);margin-top:8px;">20/30 = 67%</div>
+      <div style="font-size:12px;color:var(--muted);">Your world = everyone</div>
+    </div>
+    <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:12px;padding:20px;text-align:center;">
+      <div style="font-family:'Fredoka One',cursive;color:var(--bayes-green);font-size:16px;margin-bottom:8px;">P(Pass | Studied)</div>
+      <div style="font-size:14px;color:var(--muted);">Out of the 20 who <strong style="color:#fff;">studied</strong>, how many passed?</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--bayes-green);margin-top:8px;">18/20 = 90%</div>
+      <div style="font-size:12px;color:var(--muted);">Your world shrank to only studiers</div>
+    </div>
+  </div>
+
+  <div class="tip-box">🔄 <strong>The "given" shrinks your world.</strong> Instead of looking at everyone, you ONLY look at the group that matches the condition. That group becomes your new "total."</div>
+</div>
+
+<div class="card card-rev">
+  <h3>But Here's the Tricky Part...</h3>
+  <p><strong style="color:var(--flip-orange);">P(A | B) is NOT the same as P(B | A)!</strong></p>
+  <p style="margin-top:12px;">This sounds obvious, but people confuse them ALL the time. Let's see why:</p>
+
+  <div class="flip-container">
+    <div class="flip-card" style="border-color:var(--rev-blue);">
+      <div style="font-family:'Fredoka One',cursive;color:var(--rev-blue);font-size:16px;">P(Wet | Raining)</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:8px;">If it's raining, what's the chance you're wet?</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--rev-blue);margin-top:8px;">≈ 95%</div>
+      <div style="font-size:12px;color:var(--muted);">Almost certainly wet!</div>
+    </div>
+    <div class="flip-arrow">≠</div>
+    <div class="flip-card" style="border-color:var(--flip-orange);">
+      <div style="font-family:'Fredoka One',cursive;color:var(--flip-orange);font-size:16px;">P(Raining | Wet)</div>
+      <div style="font-size:14px;color:var(--muted);margin-top:8px;">If you're wet, what's the chance it's raining?</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:28px;color:var(--flip-orange);margin-top:8px;">≈ 30%</div>
+      <div style="font-size:12px;color:var(--muted);">Could be a pool, shower, sprinkler...</div>
+    </div>
+  </div>
+
+  <div class="tip-box tip-box-flip">⚠️ <strong>The Big Mistake:</strong> "If a sick person tests positive 99% of the time" does NOT mean "if you test positive, there's a 99% chance you're sick." These are DIFFERENT questions! Bayes' Theorem lets you flip from one to the other.</div>
+</div>
+
+
+<!-- ╔══════════ THE FLIP PROBLEM ══════════╗ -->
+<div class="section-divider div-flip">
+  <div class="label">🔀 The Flip Problem — A Story</div>
+</div>
+
+<div class="card card-flip">
+  <h3>The Surprising Medical Test</h3>
+  <p>Let's walk through a famous example that shocks everyone — even doctors get this wrong!</p>
+
+  <div style="background:rgba(249,115,22,0.08);border:2px solid rgba(249,115,22,0.25);border-radius:12px;padding:24px;margin:16px 0;">
+    <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--flip-orange);margin-bottom:12px;">📋 The Setup</div>
+    <div style="font-size:16px;color:var(--muted);line-height:2.2;">
+      • A rare disease affects <strong style="color:#fff;">1 in 100 people</strong> (1% of people are sick)<br>
+      • A test for this disease is <strong style="color:#fff;">90% accurate</strong>:<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;— If you're <strong style="color:#f85149;">sick</strong>, the test says Positive <strong style="color:#fff;">90%</strong> of the time ✅<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;— If you're <strong style="color:#3fb950;">healthy</strong>, the test says Negative <strong style="color:#fff;">90%</strong> of the time ✅<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;— (That means it incorrectly says Positive for healthy people <strong style="color:#f85149;">10%</strong> of the time)
+    </div>
+  </div>
+
+  <div style="background:rgba(248,81,73,0.08);border:2px solid rgba(248,81,73,0.25);border-radius:14px;padding:24px;margin:16px 0;text-align:center;">
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;color:#f85149;margin-bottom:8px;">❓ THE BIG QUESTION</div>
+    <div style="font-size:18px;color:#fff;line-height:1.6;">You test <strong style="color:var(--flip-orange);">POSITIVE</strong>.<br>What is the probability you are actually <strong style="color:#f85149;">SICK</strong>?</div>
+  </div>
+
+  <div style="text-align:center;margin:16px 0;">
+    <div style="font-size:16px;color:var(--muted);margin-bottom:8px;">Most people guess:</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:36px;color:var(--flip-orange);">90%? 80%?</div>
+  </div>
+
+  <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:14px;padding:24px;margin:16px 0;text-align:center;">
+    <div style="font-size:16px;color:var(--muted);margin-bottom:8px;">The REAL answer:</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:48px;color:var(--bayes-green);">Only ~8.3%!</div>
+    <div style="font-size:16px;color:var(--muted);margin-top:8px;">Wait, WHAT?! Let's see why... 👇</div>
+  </div>
+</div>
+
+<div class="card card-flip">
+  <h3>Let's Count It Out with 1000 People</h3>
+  <p>Instead of scary formulas, let's think about <strong>1000 real people</strong> taking the test. This makes it crystal clear!</p>
+
+  <div style="display:grid;gap:12px;margin:20px 0;">
+    <div class="step-box active">
+      <div class="step-num" style="color:var(--flip-orange);">Step 1: How many are actually sick?</div>
+      <div style="font-size:15px;color:var(--muted);">1% of 1000 = <strong style="color:#f85149;font-size:20px;">10 sick</strong> people and <strong style="color:#3fb950;font-size:20px;">990 healthy</strong> people</div>
+    </div>
+
+    <div class="step-box active">
+      <div class="step-num" style="color:var(--flip-orange);">Step 2: Test the 10 sick people</div>
+      <div style="font-size:15px;color:var(--muted);">Test is 90% accurate → <strong style="color:#f85149;">9 test Positive</strong> ✅ (correctly!) and 1 tests Negative ❌ (missed)</div>
+    </div>
+
+    <div class="step-box active">
+      <div class="step-num" style="color:var(--flip-orange);">Step 3: Test the 990 healthy people</div>
+      <div style="font-size:15px;color:var(--muted);">Test is 90% accurate for healthy people too, BUT 10% get wrong results:<br>
+      10% of 990 = <strong style="color:var(--flip-orange);">99 FALSE Positives!</strong> 😱 (healthy but test says Positive)</div>
+    </div>
+
+    <div class="step-box active" style="border-left-color:var(--bayes-green);background:rgba(16,185,129,0.1);">
+      <div class="step-num" style="color:var(--bayes-green);">Step 4: Count ALL Positives</div>
+      <div style="font-size:15px;color:var(--muted);">
+        Total Positive tests = <strong style="color:#f85149;">9</strong> (truly sick) + <strong style="color:var(--flip-orange);">99</strong> (false positives) = <strong style="color:#fff;font-size:20px;">108 Positive results</strong><br><br>
+        Of these 108 positive tests, only <strong style="color:#f85149;">9</strong> are actually sick!<br>
+        <strong style="color:var(--bayes-green);font-size:20px;">P(Sick | Positive) = 9 / 108 = 8.3%</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-flip">
+  <h3>See It Visually — 100 People</h3>
+  <p>Here are 100 people. Watch what happens when we test them all:</p>
+
+  <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin:12px 0;">
+    <div style="display:flex;align-items:center;gap:6px;font-size:13px;"><div style="width:16px;height:16px;border-radius:4px;background:rgba(248,81,73,0.35);border:2px solid #f85149;"></div><span style="color:var(--muted);">Sick + Positive (True Positive)</span></div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:13px;"><div style="width:16px;height:16px;border-radius:4px;background:rgba(249,115,22,0.25);border:2px solid var(--flip-orange);"></div><span style="color:var(--muted);">Healthy + Positive (FALSE Positive!)</span></div>
+    <div style="display:flex;align-items:center;gap:6px;font-size:13px;"><div style="width:16px;height:16px;border-radius:4px;background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.3);"></div><span style="color:var(--muted);">Healthy + Negative (Correct)</span></div>
+  </div>
+
+  <div class="people-grid" id="peopleGrid"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;">
+    <div style="background:rgba(248,81,73,0.1);border:2px solid rgba(248,81,73,0.3);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-size:12px;color:var(--muted);">Truly Sick + Positive</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:24px;color:#f85149;">1</div>
+    </div>
+    <div style="background:rgba(249,115,22,0.1);border:2px solid rgba(249,115,22,0.3);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-size:12px;color:var(--muted);">Healthy but FALSE +</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--flip-orange);">~10</div>
+    </div>
+    <div style="background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.3);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-size:12px;color:var(--muted);">Healthy + Correct −</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:24px;color:var(--bayes-green);">~89</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:16px;padding:14px;background:rgba(16,185,129,0.08);border-radius:10px;">
+    <div style="font-size:16px;color:var(--muted);">Out of ~11 positive tests, only <strong style="color:#f85149;">1</strong> is truly sick!</div>
+    <div style="font-family:'Fredoka One',cursive;font-size:22px;color:var(--bayes-green);margin-top:4px;">P(Sick | Positive) ≈ 1/11 ≈ 9%</div>
+  </div>
+
+  <div class="tip-box tip-box-flip">🤯 <strong>Why so low?</strong> Because the disease is RARE (only 1%)! Even though the test is 90% accurate, there are SO many healthy people that even 10% false positives creates a flood of wrong results. This is called the <strong>Base Rate Fallacy</strong> — ignoring how rare the condition is.</div>
+</div>
+
+<!-- Interactive: Change the Numbers -->
+<div class="demo-box box-flip">
+  <div class="box-title">🔬 Interactive: The Base Rate Matters!</div>
+  <p style="text-align:center;color:var(--muted);margin-bottom:16px;">Slide the disease rate and test accuracy to see how P(Sick | Positive) changes!</p>
+
+  <div style="margin-bottom:16px;">
+    <label style="color:var(--text);font-weight:600;font-size:15px;">Disease Rate: <span id="rateLabel" style="color:var(--flip-orange);">1%</span></label>
+    <input type="range" id="rateSlider" min="1" max="50" value="1" oninput="updateBayes()">
+    <div class="slider-labels"><span>1% (rare)</span><span>50% (common)</span></div>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <label style="color:var(--text);font-weight:600;font-size:15px;">Test Accuracy: <span id="accLabel" style="color:var(--bayes-green);">90%</span></label>
+    <input type="range" id="accSlider" min="50" max="99" value="90" oninput="updateBayes()">
+    <div class="slider-labels"><span>50% (coin flip)</span><span>99% (excellent)</span></div>
+  </div>
+
+  <div id="bayesCalcOutput"></div>
+</div>
+
+
+<!-- ╔══════════ BAYES' FORMULA ══════════╗ -->
+<div class="section-divider div-bayes">
+  <div class="label">🧮 Bayes' Formula</div>
+</div>
+
+<div class="card card-bayes">
+  <h3>The Formula (Don't Panic!)</h3>
+  <p>Now that you <strong>understand</strong> what's happening, here's the formula that does all those counting steps in one line:</p>
+
+  <div class="formula-box" style="border-color:var(--bayes-green);">
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--bayes-green);">Bayes' Theorem</div>
+    <div class="formula" style="color:var(--bayes-green);">P(A|B) = P(B|A) × P(A) / P(B)</div>
+  </div>
+
+  <p>That looks scary, but each piece has a <strong>friendly name</strong>:</p>
+
+  <div style="display:grid;gap:10px;margin:20px 0;">
+    <div style="background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.25);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--bayes-green);min-width:80px;">P(A|B)</div>
+      <div>
+        <strong style="color:var(--bayes-green);">Posterior</strong> — what you WANT to know<br>
+        <span style="font-size:14px;color:var(--muted);">"Given the test is positive, am I sick?" — your updated belief</span>
+      </div>
+    </div>
+    <div style="background:rgba(59,130,246,0.08);border:2px solid rgba(59,130,246,0.25);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--rev-blue);min-width:80px;">P(B|A)</div>
+      <div>
+        <strong style="color:var(--rev-blue);">Likelihood</strong> — what you already know<br>
+        <span style="font-size:14px;color:var(--muted);">"If someone IS sick, what's the chance they test positive?" = 90%</span>
+      </div>
+    </div>
+    <div style="background:rgba(249,115,22,0.08);border:2px solid rgba(249,115,22,0.25);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--flip-orange);min-width:80px;">P(A)</div>
+      <div>
+        <strong style="color:var(--flip-orange);">Prior</strong> — your belief BEFORE seeing evidence<br>
+        <span style="font-size:14px;color:var(--muted);">"What's the chance of being sick at all?" = 1% (the base rate!)</span>
+      </div>
+    </div>
+    <div style="background:rgba(139,92,246,0.08);border:2px solid rgba(139,92,246,0.25);border-radius:10px;padding:16px;display:flex;align-items:center;gap:16px;">
+      <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--app-purple);min-width:80px;">P(B)</div>
+      <div>
+        <strong style="color:var(--app-purple);">Evidence</strong> — total probability of seeing this evidence<br>
+        <span style="font-size:14px;color:var(--muted);">"What's the total chance of testing positive?" (sick + false positives)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-bayes">
+  <h3>Plugging In Our Medical Test Numbers</h3>
+
+  <div style="display:grid;gap:10px;margin:20px 0;">
+    <div class="step-box active">
+      <div class="step-num" style="color:var(--bayes-green);">Known Values</div>
+      <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--muted);line-height:2.2;">
+        P(Sick) = 0.01 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--flip-orange);">← Prior (1% have the disease)</span>
+        P(+test | Sick) = 0.90 &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--rev-blue);">← Likelihood (90% accuracy for sick)</span>
+        P(+test | Healthy) = 0.10 &nbsp;<span style="color:#f85149;">← False positive rate (10%)</span>
+      </div>
+    </div>
+
+    <div class="step-box active">
+      <div class="step-num" style="color:var(--bayes-green);">Step 1: Calculate P(+test) — Total Evidence</div>
+      <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--muted);line-height:2.2;">
+        P(+test) = P(+test|Sick) × P(Sick) + P(+test|Healthy) × P(Healthy)
+        P(+test) = 0.90 × 0.01 + 0.10 × 0.99
+        P(+test) = 0.009 + 0.099 = <strong style="color:#fff;">0.108</strong>
+      </div>
+    </div>
+
+    <div class="step-box active" style="border-left-color:var(--bayes-green);background:rgba(16,185,129,0.1);">
+      <div class="step-num" style="color:var(--bayes-green);">Step 2: Apply Bayes!</div>
+      <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--muted);line-height:2.2;">
+        P(Sick | +test) = P(+test|Sick) × P(Sick) / P(+test)
+        P(Sick | +test) = 0.90 × 0.01 / 0.108
+        P(Sick | +test) = 0.009 / 0.108
+        <strong style="color:var(--bayes-green);font-size:18px;">P(Sick | +test) = 0.083 = 8.3% ✅</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-line"># Bayes' Theorem in Python
+p_sick = 0.01              # Prior: 1% have disease
+p_pos_given_sick = 0.90    # Likelihood: test accuracy for sick
+p_pos_given_healthy = 0.10 # False positive rate
+
+p_healthy = 1 - p_sick
+p_pos = (p_pos_given_sick * p_sick) + (p_pos_given_healthy * p_healthy)
+
+# Bayes!
+p_sick_given_pos = (p_pos_given_sick * p_sick) / p_pos
+
+print(f"P(Sick | Positive Test) = {p_sick_given_pos:.1%}")
+print(f"Even with a 90% accurate test, only {p_sick_given_pos:.1%} chance!")</div>
+
+  <div class="output-console">P(Sick | Positive Test) = 8.3%
+Even with a 90% accurate test, only 8.3% chance!</div>
+</div>
+
+<div class="card card-bayes">
+  <h3>Think of It as Updating Your Belief</h3>
+  <p>Bayes' Theorem is about <strong>updating what you believe</strong> when you get new evidence:</p>
+
+  <div style="display:grid;gap:4px;margin:20px 0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fredoka One',cursive;color:var(--flip-orange);min-width:100px;font-size:14px;">PRIOR</div>
+      <div style="flex:1;">
+        <div class="prob-bar"><div class="prob-fill" style="width:1%;background:var(--flip-orange);">1%</div><div class="prob-label">Before test</div></div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:20px;color:var(--bayes-green);">↓ + Evidence (Positive Test) ↓</div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fredoka One',cursive;color:var(--bayes-green);min-width:100px;font-size:14px;">POSTERIOR</div>
+      <div style="flex:1;">
+        <div class="prob-bar"><div class="prob-fill" style="width:8.3%;background:var(--bayes-green);">8.3%</div><div class="prob-label">After test</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:16px;color:var(--muted);text-align:center;margin:12px 0;line-height:1.8;">
+    Your belief went from <strong style="color:var(--flip-orange);">1%</strong> → <strong style="color:var(--bayes-green);">8.3%</strong>. The evidence made it <strong style="color:#fff;">8× more likely</strong>,<br>but it's still low because the disease is so rare!
+  </div>
+
+  <div class="tip-box tip-box-bayes">🧠 <strong>Bayesian Thinking:</strong> Start with what you believe (prior). Get new evidence. Update your belief (posterior). Get MORE evidence? Update again! Each piece of evidence nudges your belief closer to the truth.</div>
+</div>
+
+<!-- Interactive: Step-by-step Bayes Calculator -->
+<div class="demo-box box-bayes">
+  <div class="box-title">🧮 Interactive: Bayes' Step-by-Step</div>
+  <p style="text-align:center;color:var(--muted);margin-bottom:16px;">Pick a scenario and watch every step of Bayes' Theorem!</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-bayes" onclick="bayesExample('medical')">Medical Test 🏥</button>
+    <button class="btn btn-bayes" onclick="bayesExample('spam')">Spam Filter 📧</button>
+    <button class="btn btn-bayes" onclick="bayesExample('rain')">Rain Forecast 🌧️</button>
+    <button class="btn btn-bayes" onclick="bayesExample('cheat')">Cheating Detector 📝</button>
+  </div>
+  <div id="bayesStepOutput"></div>
+</div>
+
+
+<!-- ╔══════════ REAL-WORLD ══════════╗ -->
+<div class="section-divider div-app">
+  <div class="label">🌍 Real-World Bayes</div>
+</div>
+
+<div class="card card-app">
+  <h3>Bayes Powers Modern AI!</h3>
+  <p>Bayes' Theorem isn't just a math trick — it's the <strong>foundation of intelligent systems</strong> everywhere:</p>
+
+  <div class="concept-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+    <div class="concept-card" style="border-color:var(--app-purple);">
+      <div style="font-size:32px;margin-bottom:8px;">📧</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--app-purple);margin-bottom:6px;">Spam Filters</div>
+      <div style="font-size:12px;color:var(--muted);">P(Spam | has "FREE MONEY") — Gmail uses Bayes to catch spam!</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--flip-orange);">
+      <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--flip-orange);margin-bottom:6px;">Search Engines</div>
+      <div style="font-size:12px;color:var(--muted);">P(relevant page | search words) — Google ranks results using Bayesian ideas</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--bayes-green);">
+      <div style="font-size:32px;margin-bottom:8px;">🤖</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--bayes-green);margin-bottom:6px;">Self-Driving Cars</div>
+      <div style="font-size:12px;color:var(--muted);">P(pedestrian | sensor data) — update beliefs from cameras + lidar</div>
+    </div>
+    <div class="concept-card" style="border-color:var(--rev-blue);">
+      <div style="font-size:32px;margin-bottom:8px;">🏥</div>
+      <div style="font-family:'Fredoka One',cursive;font-size:14px;color:var(--rev-blue);margin-bottom:6px;">Medical Diagnosis</div>
+      <div style="font-size:12px;color:var(--muted);">P(disease | symptoms + tests) — combine multiple clues</div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-app">
+  <h3>Bayesian Updating: Evidence Stacks Up!</h3>
+  <p>The power of Bayes is that you can <strong>keep updating</strong>. Each new piece of evidence refines your belief. The posterior from one update becomes the prior for the next!</p>
+
+  <div style="display:grid;gap:8px;margin:20px 0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);min-width:130px;">Start (prior)</div>
+      <div style="flex:1;"><div class="prob-bar"><div class="prob-fill" style="width:1%;background:var(--flip-orange);min-width:30px;">1%</div></div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);min-width:130px;">+ Test 1: Positive</div>
+      <div style="flex:1;"><div class="prob-bar"><div class="prob-fill" style="width:8.3%;background:var(--bayes-green);min-width:40px;">8.3%</div></div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);min-width:130px;">+ Test 2: Positive</div>
+      <div style="flex:1;"><div class="prob-bar"><div class="prob-fill" style="width:45%;background:var(--rev-blue);">45%</div></div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);min-width:130px;">+ Test 3: Positive</div>
+      <div style="flex:1;"><div class="prob-bar"><div class="prob-fill" style="width:88%;background:var(--app-purple);">88%</div></div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);min-width:130px;">+ Symptoms match</div>
+      <div style="flex:1;"><div class="prob-bar"><div class="prob-fill" style="width:97%;background:#f85149;">97%</div></div></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:15px;color:var(--muted);margin-top:8px;">Each new evidence <strong style="color:#fff;">multiplies</strong> — from 1% → 8% → 45% → 88% → 97%. That's how doctors, detectives, and AI work — they <strong style="color:var(--bayes-green);">accumulate evidence</strong>!</div>
+</div>
+
+<div class="card card-app">
+  <h3>The Bayes' Cheat Sheet</h3>
+
+  <div style="background:rgba(0,0,0,0.35);border:2px solid var(--bayes-green);border-radius:14px;padding:24px;margin:16px 0;">
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--bayes-green);text-align:center;margin-bottom:16px;">Remember These 3 Things!</div>
+    <div style="display:grid;gap:14px;">
+      <div style="display:flex;gap:14px;align-items:center;">
+        <div style="font-size:28px;min-width:40px;text-align:center;">1️⃣</div>
+        <div style="font-size:15px;color:var(--muted);"><strong style="color:#fff;">P(A|B) ≠ P(B|A)</strong> — "sick given positive" is NOT "positive given sick." Bayes flips between them.</div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <div style="font-size:28px;min-width:40px;text-align:center;">2️⃣</div>
+        <div style="font-size:15px;color:var(--muted);"><strong style="color:#fff;">Base rates MATTER</strong> — if something is rare, even accurate tests produce many false positives. Always ask "how common is this?"</div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <div style="font-size:28px;min-width:40px;text-align:center;">3️⃣</div>
+        <div style="font-size:15px;color:var(--muted);"><strong style="color:#fff;">Evidence updates beliefs</strong> — start with a prior, get evidence, calculate posterior. More evidence = more confident!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════ QUIZ ══════════╗ -->
+<div class="section-divider div-quiz">
+  <div class="label">⚡ Final Knowledge Check</div>
+</div>
+
+<div class="quiz-wrap">
+  <div class="quiz-header">
+    <h2>Bayes' Theorem Quiz</h2>
+    <p>15 questions — can you think like a Bayesian?</p>
+  </div>
+  <div class="quiz-scorebar">
+    <div class="score-chip" id="scoreChip">0 / 15</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progBar"></div></div>
+  </div>
+  <div id="quizBody"></div>
+  <div class="final-box" id="finalBox">
+    <div class="final-score" id="finalScore"></div>
+    <div class="final-stars" id="finalStars"></div>
+    <div class="final-msg" id="finalMsg"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* ══════════ PEOPLE GRID ══════════ */
+(function(){
+  const grid=document.getElementById('peopleGrid');
+  // 100 people: 1 sick (index 0), 99 healthy
+  // Sick person tests positive (TP), ~10 healthy test false positive (FP), rest true negative
+  const fp=[5,12,23,31,44,55,63,72,81,94]; // 10 false positive indices
+  for(let i=0;i<100;i++){
+    const d=document.createElement('div');
+    if(i===0){d.className='person tp';d.textContent='🤒';}
+    else if(fp.includes(i)){d.className='person fp';d.textContent='😐';}
+    else{d.className='person tn';d.textContent='😊';}
+    grid.appendChild(d);
+  }
+})();
+
+/* ══════════ SLIDER BAYES CALCULATOR ══════════ */
+function updateBayes(){
+  const rate=parseInt(document.getElementById('rateSlider').value)/100;
+  const acc=parseInt(document.getElementById('accSlider').value)/100;
+  const fpr=1-acc;
+  document.getElementById('rateLabel').textContent=`${(rate*100).toFixed(0)}%`;
+  document.getElementById('accLabel').textContent=`${(acc*100).toFixed(0)}%`;
+
+  const pPos=acc*rate+fpr*(1-rate);
+  const posterior=(acc*rate)/pPos;
+
+  const pop=1000;
+  const sick=Math.round(pop*rate);
+  const healthy=pop-sick;
+  const tp=Math.round(sick*acc);
+  const fp_count=Math.round(healthy*fpr);
+  const totalPos=tp+fp_count;
+
+  const out=document.getElementById('bayesCalcOutput');
+  const color=posterior>0.5?'var(--bayes-green)':posterior>0.2?'var(--flip-orange)':'#f85149';
+
+  out.innerHTML=`
+    <div class="result-box" style="border-color:${color};">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-family:'Fredoka One',cursive;font-size:16px;color:var(--muted);">P(Sick | Positive Test)</div>
+        <div style="font-family:'Fredoka One',cursive;font-size:48px;color:${color};">${(posterior*100).toFixed(1)}%</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);">Out of ${pop}</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:20px;color:#f85149;">${sick} sick</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);">True Positives</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--bayes-green);">${tp}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);">FALSE Positives</div>
+          <div style="font-family:'Fredoka One',cursive;font-size:20px;color:var(--flip-orange);">${fp_count}</div>
+        </div>
+      </div>
+      <div class="prob-bar">
+        <div class="prob-fill" style="width:${posterior*100}%;background:${color};min-width:40px;">${(posterior*100).toFixed(1)}%</div>
+      </div>
+      <div style="text-align:center;font-size:14px;color:var(--muted);margin-top:8px;">
+        ${tp} truly sick out of ${totalPos} total positives → <strong style="color:#fff;">${tp}/${totalPos}</strong> = ${(posterior*100).toFixed(1)}%
+      </div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-top:8px;">
+        ${rate<0.1?'⚠️ Disease is rare — false positives dominate even with a good test!':rate<0.3?'The base rate is moderate — test results are more meaningful now.':'✅ Disease is common enough that a positive test is quite reliable!'}
+      </div>
+    </div>`;
+}
+updateBayes();
+
+/* ══════════ BAYES STEP-BY-STEP ══════════ */
+function bayesExample(type){
+  const out=document.getElementById('bayesStepOutput');
+  const examples={
+    medical:{
+      title:'🏥 Medical Test',
+      question:'P(Sick | Positive Test)',
+      a:'Sick',b:'Positive Test',
+      pA:0.01,pBgivenA:0.90,pBgivenNotA:0.10,
+      aLabel:'Disease rate',bLabel:'Test accuracy',
+      notALabel:'False positive rate',
+      context:'Only 1% of people have this disease. The test catches 90% of sick people but also falsely flags 10% of healthy people.'
+    },
+    spam:{
+      title:'📧 Spam Email Filter',
+      question:'P(Spam | contains "FREE")',
+      a:'Spam',b:'Contains "FREE"',
+      pA:0.20,pBgivenA:0.80,pBgivenNotA:0.05,
+      aLabel:'Spam rate',bLabel:'"FREE" in spam',
+      notALabel:'"FREE" in legit email',
+      context:'20% of emails are spam. 80% of spam contains "FREE" but only 5% of legitimate emails do.'
+    },
+    rain:{
+      title:'🌧️ Rain Prediction',
+      question:'P(Rain | Cloudy Morning)',
+      a:'Rain',b:'Cloudy Morning',
+      pA:0.08,pBgivenA:0.85,pBgivenNotA:0.20,
+      aLabel:'Rainy days/year',bLabel:'Cloudy before rain',
+      notALabel:'Cloudy but no rain',
+      context:'It rains 8% of days. 85% of rainy days started cloudy, but 20% of dry days are also cloudy.'
+    },
+    cheat:{
+      title:'📝 Cheating Detector',
+      question:'P(Cheated | Flagged by System)',
+      a:'Cheated',b:'Flagged',
+      pA:0.03,pBgivenA:0.95,pBgivenNotA:0.08,
+      aLabel:'Students who cheat',bLabel:'Detection rate',
+      notALabel:'False flag rate',
+      context:'3% of students cheat. The system catches 95% of cheaters but falsely flags 8% of honest students.'
+    }
+  };
+  const e=examples[type];
+  const pNotA=1-e.pA;
+  const pB=e.pBgivenA*e.pA+e.pBgivenNotA*pNotA;
+  const posterior=(e.pBgivenA*e.pA)/pB;
+
+  const pop=1000;
+  const nA=Math.round(pop*e.pA);const nNotA=pop-nA;
+  const tp=Math.round(nA*e.pBgivenA);const fp=Math.round(nNotA*e.pBgivenNotA);
+  const totalB=tp+fp;
+
+  const color=posterior>0.5?'var(--bayes-green)':'var(--flip-orange)';
+
+  out.innerHTML=`
+    <div class="result-box" style="border-color:var(--bayes-green);">
+      <div style="text-align:center;font-family:'Fredoka One',cursive;font-size:20px;color:var(--bayes-green);margin-bottom:8px;">${e.title}</div>
+      <div style="font-size:14px;color:var(--muted);text-align:center;margin-bottom:16px;">${e.context}</div>
+
+      <div class="step-box active">
+        <div class="step-num" style="color:var(--flip-orange);">Given Values</div>
+        <div style="font-family:'Fira Code',monospace;font-size:13px;color:var(--muted);line-height:2.2;">
+P(${e.a}) = ${e.pA} &nbsp;&nbsp;&nbsp;← ${e.aLabel}
+P(${e.b} | ${e.a}) = ${e.pBgivenA} &nbsp;&nbsp;&nbsp;← ${e.bLabel}
+P(${e.b} | NOT ${e.a}) = ${e.pBgivenNotA} &nbsp;&nbsp;&nbsp;← ${e.notALabel}</div>
+      </div>
+
+      <div class="step-box active">
+        <div class="step-num" style="color:var(--rev-blue);">Step 1: Think in people (${pop})</div>
+        <div style="font-family:'Fira Code',monospace;font-size:13px;color:var(--muted);line-height:2.2;">
+${nA} are ${e.a} → ${tp} get ${e.b} (true positives)
+${nNotA} are NOT ${e.a} → ${fp} get ${e.b} (false positives!)</div>
+      </div>
+
+      <div class="step-box active">
+        <div class="step-num" style="color:var(--app-purple);">Step 2: Total ${e.b}</div>
+        <div style="font-family:'Fira Code',monospace;font-size:13px;color:var(--muted);">
+Total = ${tp} + ${fp} = ${totalB}</div>
+      </div>
+
+      <div class="step-box active" style="border-left-color:var(--bayes-green);background:rgba(16,185,129,0.1);">
+        <div class="step-num" style="color:var(--bayes-green);">Step 3: Bayes!</div>
+        <div style="font-family:'Fira Code',monospace;font-size:14px;color:var(--muted);line-height:2.2;">
+${e.question} = ${tp} / ${totalB}
+<strong style="color:var(--bayes-green);font-size:18px;">= ${(posterior*100).toFixed(1)}%</strong></div>
+      </div>
+
+      <div class="prob-bar" style="margin-top:16px;">
+        <div class="prob-fill" style="width:${posterior*100}%;background:${color};min-width:50px;">${(posterior*100).toFixed(1)}%</div>
+      </div>
+
+      <div style="text-align:center;font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);margin-top:8px;">
+        P(${e.a}|${e.b}) = P(${e.b}|${e.a})×P(${e.a}) / P(${e.b}) = ${e.pBgivenA}×${e.pA} / ${pB.toFixed(4)} = ${posterior.toFixed(4)}
+      </div>
+    </div>`;
+}
+
+
+/* ══════════ QUIZ ══════════ */
+const QS=[
+  {q:'P(A|B) is the same as P(B|A).',opts:['True','False','Sometimes','Only for coins'],ans:1,explain:'P(A|B) ≠ P(B|A)! "Sick given positive" is NOT "positive given sick." This is the whole point of Bayes!'},
+  {q:'What does Bayes\' Theorem help you do?',opts:['Add probabilities','Flip a conditional probability','Multiply fractions','Count outcomes'],ans:1,explain:'Bayes flips P(B|A) into P(A|B) — it reverses the direction of the "given"!'},
+  {q:'What is the "prior" in Bayes?',opts:['The test result','Your belief BEFORE seeing evidence','The final answer','The evidence itself'],ans:1,explain:'The prior P(A) is your initial belief before any new evidence — like the base rate of a disease.'},
+  {q:'What is the "posterior" in Bayes?',opts:['The original belief','The evidence','Your UPDATED belief after evidence','The false positive rate'],ans:2,explain:'The posterior P(A|B) is your updated belief AFTER seeing the evidence — what you wanted to know!'},
+  {q:'A disease affects 1% of people. A 90% accurate test says Positive. P(Sick) is about:',opts:['90%','50%','8%','1%'],ans:2,explain:'Because the disease is rare, most positives are false! P(Sick|+) ≈ 8.3%. Base rate matters!'},
+  {q:'Why is P(Sick|Positive) so low even with a 90% accurate test?',opts:['The test is bad','The disease is very rare','Math is wrong','Not enough people tested'],ans:1,explain:'When a disease is rare (1%), the false positives from 99 healthy people overwhelm the true positives from 1 sick person!'},
+  {q:'What is the "Base Rate Fallacy"?',opts:['Forgetting the test accuracy','Ignoring how rare/common something is','Using the wrong formula','Flipping a coin'],ans:1,explain:'Base Rate Fallacy = ignoring the prior probability (how common something is). It leads to huge errors!'},
+  {q:'What does "likelihood" mean in Bayes?',opts:['P(A) — the prior','P(B|A) — evidence given the hypothesis','P(A|B) — the answer','P(B) — total evidence'],ans:1,explain:'Likelihood P(B|A) is the probability of seeing the evidence IF the hypothesis is true — like P(+test | sick).'},
+  {q:'P(B) in Bayes\' formula represents:',opts:['Only true positives','Only false positives','Total probability of seeing the evidence','The base rate'],ans:2,explain:'P(B) is the total probability of the evidence from ALL sources — true positives + false positives combined.'},
+  {q:'If disease rate goes UP (more common), P(Sick|+) will:',opts:['Go down','Stay the same','Go up','Become 0'],ans:2,explain:'More sick people → more true positives → false positives become less dominant → P(Sick|+) increases!'},
+  {q:'If test accuracy goes UP, P(Sick|+) will:',opts:['Go down','Go up','Stay the same','Become negative'],ans:1,explain:'Better accuracy = fewer false positives = positive results more likely to be real = P(Sick|+) goes UP!'},
+  {q:'A spam filter knows P("FREE"|Spam)=0.8. It needs P(Spam|"FREE"). It uses:',opts:['Addition rule','Complement rule','Bayes\' Theorem','PEMDAS'],ans:2,explain:'Bayes flips P("FREE"|Spam) into P(Spam|"FREE") — exactly what the filter needs!'},
+  {q:'In Bayesian updating, the posterior from round 1 becomes the ___ for round 2.',opts:['Evidence','Likelihood','Prior','Complement'],ans:2,explain:'Each posterior becomes the next prior! That\'s how evidence stacks up — belief keeps updating.'},
+  {q:'P(Rain|Cloudy) = 0.4 means:',opts:['40% of days are cloudy','40% of cloudy days have rain','Rain and clouds are independent','40% of rainy days are cloudy'],ans:1,explain:'P(Rain|Cloudy) = 0.4 means given it\'s cloudy, there\'s a 40% chance of rain. The "given" = cloudy!'},
+  {q:'Bayes\' Theorem formula is:',opts:['P(A|B) = P(A) + P(B)','P(A|B) = P(B|A) × P(A) / P(B)','P(A|B) = P(A) × P(B)','P(A|B) = P(A) − P(B)'],ans:1,explain:'P(A|B) = P(B|A) × P(A) / P(B). Likelihood × Prior ÷ Evidence = Posterior!'}
+];
+
+let correct=0,answered=0;
+function buildQuiz(){
+  correct=0;answered=0;
+  document.getElementById('scoreChip').textContent='0 / 15';
+  document.getElementById('progBar').style.width='0%';
+  document.getElementById('finalBox').classList.remove('show');
+  const body=document.getElementById('quizBody');body.innerHTML='';
+  QS.forEach((q,qi)=>{
+    const card=document.createElement('div');card.className='qcard';card.id='qcard'+qi;
+    card.innerHTML=`
+      <div class="qnum">QUESTION ${qi+1} OF ${QS.length}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="opts" id="opts${qi}">
+        ${q.opts.map((o,oi)=>`<button class="opt" onclick="answer(${qi},${oi})">${String.fromCharCode(65+oi)}. ${o}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb${qi}"></div>`;
+    body.appendChild(card);
+  });
+}
+function answer(qi,chosen){
+  const q=QS[qi];const card=document.getElementById('qcard'+qi);
+  const btns=document.querySelectorAll(`#opts${qi} .opt`);
+  btns.forEach(b=>b.disabled=true);
+  const ok=chosen===q.ans;
+  btns[chosen].classList.add(ok?'correct':'wrong');
+  if(!ok)btns[q.ans].classList.add('correct');
+  document.getElementById('fb'+qi).textContent=(ok?'✅ Correct! ':'❌ Not quite! ')+q.explain;
+  document.getElementById('fb'+qi).className='feedback '+(ok?'ok':'bad');
+  card.classList.add(ok?'ok':'bad');
+  if(ok)correct++;answered++;
+  document.getElementById('scoreChip').textContent=`${correct} / ${answered}`;
+  document.getElementById('progBar').style.width=`${(answered/QS.length)*100}%`;
+  if(answered===QS.length)showFinal();
+}
+function showFinal(){
+  const fb=document.getElementById('finalBox'),fs=document.getElementById('finalScore'),fst=document.getElementById('finalStars'),fm=document.getElementById('finalMsg');
+  fs.textContent=`${correct} / ${QS.length}`;
+  if(correct===QS.length){fs.className='final-score perfect';fst.textContent='⭐⭐⭐';fm.textContent='PERFECT SCORE!\nBayesian Master!\nYou can flip any probability! 🧮';}
+  else if(correct>=12){fs.className='final-score great';fst.textContent='⭐⭐';fm.textContent='EXCELLENT WORK!\nYou think like a Bayesian!\nKeep updating those beliefs!';}
+  else{fs.className='final-score okish';fst.textContent='⭐';fm.textContent='GOOD START!\nReview the medical test example\nand try the sliders again!';}
+  fb.classList.add('show');
+}
+buildQuiz();
+</script>
+</body>
+</html>
